@@ -1,7 +1,7 @@
 function getDetail(url) {
-    new_url = url.replace("http://", "//")
-    document.getElementById("detail-display1").src = new_url;
-    document.getElementById("detail-display2").src = new_url;
+    window.open(url, "google");
+    // document.getElementById("detail-display1").src = url;
+    // document.getElementById("detail-display2").src = url;
 }
 
 function firstButton() {
