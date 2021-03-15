@@ -909,6 +909,7 @@ def output():
                     day = "土"
 
                 times = selectBtn[2]
+                selectBtn[2] = int(selectBtn[2])
 
                 select_class_db = Class.query.filter_by(
                     semester=semester, day=day, time=times).all()
@@ -935,7 +936,7 @@ def output():
                 else:
                     second[selectBtn[1]][int(
                         selectBtn[2])-1] = dic_select_lecture_name["title"]
-
+                selectBtn[2] = int(selectBtn[2])
             # new 変更！
             return render_template("course.html",
                                     first = first,

@@ -67,10 +67,12 @@
             <form action="/course#top" method="POST" style="float: left;width:100%;margin:0;">
                 <span
                     style="background: linear-gradient(transparent 50%, #cfeeb5 0%);">　{{selectBtn[1]}}{{selectBtn[2]}}　</span>
+                {% if first[selectBtn[1]][selectBtn[2]-1] != ""　%}
                 <button style="width:75%;" class="green" id="selectLecture" name="selectLecture"
                     value='{"first":"{{first}}", "second":"{{second}}", "request":"{{selectBtn}}", "classroom": "{{classroom}}", "language": "{{language}}", "title": "", "count": "{{count}}-2"}'>
                     取り消し
                 </button>
+                {% endif %}
             </form>
             {% for a in getDB %}
             <form action="/course#top" method="POST" style="float: left;width:75%;margin:0;">
@@ -131,10 +133,12 @@
             <form action="/course#top2" method="POST" style="float: left;width:100%;margin:0;">
                 <span
                     style="background: linear-gradient(transparent 50%, #cfeeb5 0%);">　{{selectBtn[1]}}{{selectBtn[2]}}　</span>
+                {% if second[selectBtn[1]][selectBtn[2]-1] != ""　%}
                 <button style="width:75%;" class="green" id="select" name="select"
                     value='{"first":"{{first}}", "second":"{{second}}", "request":"{{selectBtn}}", "classroom": "{{classroom}}", "language": "{{language}}", "title": "", "count": "{{count}}-2"}'>
                     取り消し
                 </button>
+                {% endif %}
             </form>
             {% for a in getDB %}
             <form action="/course#top2" method="POST" style="float: left;width:75%;margin:0;">
