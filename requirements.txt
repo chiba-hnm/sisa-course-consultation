@@ -115,7 +115,7 @@ ptyprocess==0.6.0
 py-trello==0.17.1
 pyasn1==0.4.8
 pyasn1-modules==0.2.8
-PyAudio==0.2.11
+# PyAudio==0.2.11
 pycares==3.0.0
 pycodestyle==2.5.0
 pycparser==2.19
