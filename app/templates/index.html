@@ -1,0 +1,72 @@
+{% block head %}
+<script src={{ url_for("static", filename="js/sample.js" ) }}></script>
+<link rel="stylesheet" type="text/css" href="{{ url_for('static',filename='css/sample.css') }}">
+{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-md-10">
+        <h1>2020年度新入生履修相談会</h1>
+    </div>
+    <div class="frame frame-red">
+        <div class="frame-title caution">
+            注意
+        </div>
+        <p>
+            当サイトは履修計画の<b>参考用</b>に作成されたサイトです。<br>
+            当サイトは、履修登録の如何なるトラブルに<b>一切の責任を負いません。</b><br>
+            当サイトを利用される際にはご自身で時間割・シラバス等を確認した上でご使用ください。<br>
+            あくまでも、<b>参考程度</b>にご覧ください。
+        </p>
+    </div>
+    {% if getDB == True %}
+    <div>
+        初回のため，講義内容をデータベースに保存する必要があります．<br>
+        下記のボタンをクリックすると，データベースに保存が開始されます．<br>
+        終了したら自動的にページが切り替わりますので，そのままでお待ちください．<br>
+        <form action="/get" method="POST">
+            <button type="submit" class="btn btn-primary">データベースに保存</button>
+        </form>
+    </div>
+    {% else %}  
+    <form action="/import" method="POST" enctype="multipart/form-data">
+        <p>保存したデータで途中から始める：
+            <input type="file" name="uploadFile" accept="text/plain" /><br><br>
+            <button type="submit" class="btn btn-primary">決定</button>
+        <div style="color:red;">
+            {% if errorMsg != "" %}
+            {{errorMsg}}
+            {% endif %}
+        </div>
+    </form>
+    <br><br>
+</div>
+<div>
+    <form action="/course" method="POST" name="select_form">
+        <p>クラス：
+            {% for c in classroom %}
+            {% if c == "A" %}
+            <input type="radio" id="class{{c}}" name="select_class" value="{{c}}" checked="checked">
+            <label for="class{{c}}" class="radio">{{c}}</label>
+            {% else %}
+            <input type="radio" id="class{{c}}" name="select_class" value="{{c}}">
+            <label for="class{{c}}" class="radio">{{c}}</label>
+            {% endif %}
+            {% endfor %}
+        </p>
+        <p>第二外国語：
+            {% for l in language %}
+            {% if l == "フランス" %}
+            <input type="radio" id="language{{l}}" name="select_language" value="{{l}}" checked="checked">
+            <label for="language{{l}}" class="radio">{{l}}語</label>
+            {% else %}
+            <input type="radio" id="language{{l}}" name="select_language" value="{{l}}">
+            <label for="language{{l}}" class="radio">{{l}}語</label>
+            {% endif %}
+            {% endfor %}
+        </p>
+        <button type="submit" class="btn btn-primary">決定</button>
+    </form>
+    {% endif %}
+</div>
+{% endblock %}

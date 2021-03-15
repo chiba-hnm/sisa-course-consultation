@@ -1,0 +1,162 @@
+{% block head %}
+<script src={{ url_for("static", filename="js/sample.js" ) }}></script>
+<link rel="stylesheet" type="text/css" href="{{ url_for('static',filename='css/sample.css') }}">
+{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-md-10">
+        <h1>2020年度新入生履修相談会</h1>
+    </div>
+    <div style="float:right">
+        <form action="/export" method="POST" style="margin:0;">
+            <button id="export" name="export" style="width:100%;"
+                value='{"first":"{{first}}", "second":"{{second}}", "classroom": "{{classroom}}", "language": "{{language}}", "count":"{{count}}"'>
+                途中データを保存する
+            </button>
+        </form>
+        <form action="/save" method="POST" style="margin:0;">
+            <button id="save" name="save" style="width:100%;"
+                value='{"first":"{{first}}", "second":"{{second}}", "classroom": "{{classroom}}", "language": "{{language}}", "count":"{{count}}"}'>
+                PDFで保存する
+            </button>
+        </form>
+    </div>
+</div>
+<div>
+    <p>クラス：{{classroom}}　　第二外国語：{{language}}</p>
+    <form action="/" method="POST">
+        <button type="submit" class="btn btn-primary">リセット</button>
+    </form>
+    <hr>
+    <button style="height:50px;width:100px;font-size: 20px;" name="top" id="top" onclick="firstButton()">前期</button>
+    <button style="height:50px;width:100px;font-size: 20px;" name="top2" id="top2" onclick="secondButton()">後期</button>
+    <div class="clip-box-a" style="float:right;margin-left:30px">現在：{{count}}単位</div>
+    <div id="first-semester" name="first-semester">
+        <form action="/course#top" method="POST">
+            <table ALIGN="left"
+                style="width: 55%;border: 1px #000000 solid;border-collapse: collapse; text-align:center;">
+                <tr>
+                    <th style="width:10%;"></th>
+                    {% for f in first %}
+                    <th style="width:15%;">{{f}}</th>
+                    {% endfor %}
+                </tr>
+                {% for t in time %}
+                <tr>
+                    <td>{{t}}</td>
+                    {% for f in first %}
+                    <td>
+                        {% if first[f][t-1][0] == "○" %}
+                        {{first[f][t-1][1:]}}
+                        {% else %}
+                        <button style="padding: 0px;width: 10px;height: 10px;" type="submit" class="btn btn-primary"
+                            id="selectTime" name="selectTime"
+                            value='{"first":"{{first}}", "second":"{{second}}","request":"first/{{f}}/{{t}}", "classroom": "{{classroom}}", "language": "{{language}}", "count":"{{count}}"}'></button>
+                        {{first[f][t-1]}}
+                        {% endif %}
+                    </td>
+                    {% endfor %}
+                </tr>
+                {% endfor %}
+            </table>
+        </form>
+
+        {% if getDB != [] %}
+        <div style="float:right;width:40%;height:300;overflow: scroll;margin-bottom:40px;">
+            <form action="/course#top" method="POST" style="float: left;width:100%;margin:0;">
+                <span
+                    style="background: linear-gradient(transparent 50%, #cfeeb5 0%);">　{{selectBtn[1]}}{{selectBtn[2]}}　</span>
+                <button style="width:75%;" class="green" id="selectLecture" name="selectLecture"
+                    value='{"first":"{{first}}", "second":"{{second}}", "request":"{{selectBtn}}", "classroom": "{{classroom}}", "language": "{{language}}", "title": "", "count": "{{count}}-2"}'>
+                    取り消し
+                </button>
+            </form>
+            {% for a in getDB %}
+            <form action="/course#top" method="POST" style="float: left;width:75%;margin:0;">
+                <button style="width:90%; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;" class="green"
+                    id="selectLecture" name="selectLecture"
+                    value='{"first":"{{first}}", "second":"{{second}}", "request":"{{selectBtn}}", "classroom": "{{classroom}}", "language": "{{language}}", "title": "{{a.title}}", "count": "{{count}}+2"}'>
+                    {{a.title}}[{{a.campus}}]（{{a.instructer}}）
+                </button>
+            </form>
+            <button style="width:15%;" style="float: right;" onclick="getDetail('{{a.detail}}')">詳細</button>
+
+            {% endfor %}
+
+        </div>
+        <div style="float:right;width:40%;height:300;">
+            <iframe id="detail-display1" float="bottom" width="100%" height="100%" frameborder="1" style="border:1;"
+                allowfullscreen="" aria-hidden="false" tabindex="0"></iframe>
+
+            <!-- <iframe src="http://syllabus.aoyama.ac.jp/shousai.ashx?YR=2020&FN=1611020-1221&KW=&BQ=3f5e5d46524048535c48584c4959336c647d22233127225448512b3e2e296c6f54714344415772021a1d495f401d1e0a02055e5d5f6544524e1f6564796b7b7114001004110803091c746c14131b070a0702061200101112161c081a08120c6253515b22535620564e3038565e5d5c5f5633274e36204751332e475d3730435ac5b4a7selectLecture5a0c7b2adccbfaececcabcda7b4d7a0b1ada5b2dadbbcd0d5a0b8dcf0909fccca83ffe59b94c5c58af4ec9b8ddedc95edf7838ad7d79cfcfe8cfce0f0fce4848f87fbe18c85f7a1adeb9d9bedf78294e9e7f0879be4e9fd8c94e3ed" 
+        float="bottom" width="100%" height="100%" frameborder="1" style="border:1;" allowfullscreen="" aria-hidden="false" tabindex="0"></iframe> -->
+        </div>
+        {% endif %}
+
+    </div>
+    <div id="second-semester" name="second-semester">
+        <form action="/course#top2" method="POST">
+            <table ALIGN="left"
+                style="width: 55%;border: 1px #000000 solid;border-collapse: collapse; text-align:center;">
+                <tr>
+                    <th style="width:10%;"></th>
+                    {% for s in second %}
+                    <th style="width:15%;">{{s}}</th>
+                    {% endfor %}
+                </tr>
+                {% for t in time %}
+                <tr>
+                    <td>{{t}}</td>
+                    {% for s in second %}
+                    <td>
+                        {% if second[s][t-1][0] == "○" %}
+                        {{second[s][t-1][1:]}}
+                        {% else %}
+                        <button style="padding: 0px;width: 10px;height: 10px;" type="submit" class="btn btn-primary"
+                            id="selectTime" name="selectTime"
+                            value='{"first":"{{first}}", "second":"{{second}}","request":"second/{{s}}/{{t}}", "classroom": "{{classroom}}", "language": "{{language}}", "count":"{{count}}"}'></button>
+                        {{second[s][t-1]}}
+                        {% endif %}
+                    </td>
+                    {% endfor %}
+                </tr>
+                {% endfor %}
+            </table>
+        </form>
+        {% if getDB != [] %}
+
+        <div style="float:right;width:40%;height:300;overflow: scroll;margin-bottom:40px;">
+
+            <form action="/course#top2" method="POST" style="float: left;width:100%;margin:0;">
+                <span
+                    style="background: linear-gradient(transparent 50%, #cfeeb5 0%);">　{{selectBtn[1]}}{{selectBtn[2]}}　</span>
+                <button style="width:75%;" class="green" id="select" name="select"
+                    value='{"first":"{{first}}", "second":"{{second}}", "request":"{{selectBtn}}", "classroom": "{{classroom}}", "language": "{{language}}", "title": "", "count": "{{count}}-2"}'>
+                    取り消し
+                </button>
+            </form>
+            {% for a in getDB %}
+            <form action="/course#top2" method="POST" style="float: left;width:75%;margin:0;">
+                <button style="width:90%; overflow: hidden; text-overflow: ellipsis;white-space: nowrap;" class="green"
+                    id="selectLecture" name="selectLecture"
+                    value='{"first":"{{first}}", "second":"{{second}}", "request":"{{selectBtn}}", "classroom": "{{classroom}}", "language": "{{language}}", "title": "{{a.title}}", "count": "{{count}}+2"}'>
+                    {{a.title}}[{{a.campus}}]（{{a.instructer}}）
+                </button>
+            </form>
+            <button style="width:15%;" style="float: right;" onclick="getDetail('{{a.detail}}')">詳細</button>
+
+            {% endfor %}
+
+        </div>
+        <div style="float:right;width:40%;height:300;">
+            <iframe id="detail-display2" float="bottom" width="100%" height="100%" frameborder="1" style="border:1;"
+                allowfullscreen="" aria-hidden="false" tabindex="0"></iframe>
+
+            <!-- <iframe src="http://syllabus.aoyama.ac.jp/shousai.ashx?YR=2020&FN=1611020-1221&KW=&BQ=3f5e5d46524048535c48584c4959336c647d22233127225448512b3e2e296c6f54714344415772021a1d495f401d1e0a02055e5d5f6544524e1f6564796b7b7114001004110803091c746c14131b070a0702061200101112161c081a08120c6253515b22535620564e3038565e5d5c5f5633274e36204751332e475d3730435ac5b4a7selectLecture5a0c7b2adccbfaececcabcda7b4d7a0b1ada5b2dadbbcd0d5a0b8dcf0909fccca83ffe59b94c5c58af4ec9b8ddedc95edf7838ad7d79cfcfe8cfce0f0fce4848f87fbe18c85f7a1adeb9d9bedf78294e9e7f0879be4e9fd8c94e3ed" 
+        float="bottom" width="100%" height="100%" frameborder="1" style="border:1;" allowfullscreen="" aria-hidden="false" tabindex="0"></iframe> -->
+        </div>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}
