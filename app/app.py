@@ -37,7 +37,6 @@ def index():
     getDB = Class.query.all()
     if getDB == []:
         getDB = True
-    print(getDB)
     # new 変更！
     return render_template("index.html", getDB=getDB, errorMsg="", classroom=["A", "B", "C", "D", "E", "F"], language=["フランス", "ドイツ", "スペイン", "中国", "ロシア", "韓国"])
 
@@ -58,8 +57,6 @@ def make():  # ファイル名
         response = make_response()
         downloadFileName = str(datetime.now()) + '.pdf'
         pdf_canvas = canvas.Canvas('./test.pdf',  pagesize=portrait(A4))
-        print(pdf_canvas)
-        print(response)
         print_string(pdf_canvas, dic["classroom"],
                      dic["language"], dic["count"], first, second)
         pdf_canvas.save()
@@ -165,6 +162,22 @@ def print_string(pdf_canvas, classroom, language, count, first, second):
 if __name__ == '__main__':
     make()
 
+@app.route("/get")
+def no_get():
+    return render_template("index.html", getDB=False, errorMsg="", classroom=["A", "B", "C", "D", "E", "F"], language=["フランス", "ドイツ", "スペイン", "中国", "ロシア", "韓国"])
+
+@app.route("/save")
+def no_save():
+    return render_template("index.html", getDB=False, errorMsg="", classroom=["A", "B", "C", "D", "E", "F"], language=["フランス", "ドイツ", "スペイン", "中国", "ロシア", "韓国"])
+
+@app.route("/course")
+def no_course():
+    return render_template("index.html", getDB=False, errorMsg="", classroom=["A", "B", "C", "D", "E", "F"], language=["フランス", "ドイツ", "スペイン", "中国", "ロシア", "韓国"])
+
+@app.route("/import")
+def no_import():
+    return render_template("index.html", getDB=False, errorMsg="", classroom=["A", "B", "C", "D", "E", "F"], language=["フランス", "ドイツ", "スペイン", "中国", "ロシア", "韓国"])
+
 # データインポート時
 @app.route("/import", methods=["post"])
 def data_import():
@@ -181,7 +194,6 @@ def data_import():
             dic = ast.literal_eval(fileData)
             first = ast.literal_eval(dic["first"])
             second = ast.literal_eval(dic["second"])
-            print(type(dic))
             # new 変更！
             return render_template("course.html", count=dic["count"], selectBtn=selectBtn, getDB=getDB, time=time, first=first, second=second, classroom=dic["classroom"], language=dic["language"], )
         else:
@@ -189,11 +201,13 @@ def data_import():
     # new 変更！
     return render_template("index.html", getDB=False, errorMsg=errorMsg, classroom=["A", "B", "C", "D", "E", "F"], language=["フランス", "ドイツ", "スペイン", "中国", "ロシア", "韓国"])
 
+@app.route("/export")
+def no_export():
+    return render_template("index.html", getDB=False, errorMsg="", classroom=["A", "B", "C", "D", "E", "F"], language=["フランス", "ドイツ", "スペイン", "中国", "ロシア", "韓国"])
 
 @app.route("/export", methods=["post"])
 def data_export():
     if request.form.get("export") != None:
-        errorMsg = ""
         export_data = request.form.get("export")
         response = make_response()
         response.data = export_data
@@ -202,13 +216,16 @@ def data_export():
             downloadFileName
         return response
     # new 変更！
-    return render_template("index.html", getDB=False, errorMsg=errorMsg, classroom=["A", "B", "C", "D", "E", "F"], language=["フランス", "ドイツ", "スペイン", "中国", "ロシア", "韓国"])
+    return render_template("index.html", getDB=False, errorMsg="", classroom=["A", "B", "C", "D", "E", "F"], language=["フランス", "ドイツ", "スペイン", "中国", "ロシア", "韓国"])
 
     # return render_template("index.html", time = time, first=first, classroom= ["A", "B", "C", "D", "E", "F"], language=["フランス", "ドイツ", "スペイン", "中国", "ロシア", "韓国"])  # new 変更！
 
 
 @app.route("/get", methods=["post"])
 def get():
+    db_session.query(Class).delete()
+    db_session.commit()
+
     test = ["社会数理入門Ⅰ", "社会数理入門Ⅱ", "数理情報Ⅰ",
             "数理情報Ⅱ", "ウェルカム・レクチャー", "キャリアデザイン・セミナー"]
     options = webdriver.ChromeOptions()
@@ -254,553 +271,552 @@ def get():
                 db_session.add(content)
                 db_session.commit()
 
-    # test2 = ["フレッシャーズ・セミナー", "自己理解", "現代社会の諸問題", "科学・技術の視点", "歴史と人間"]
-    # for i in test2:
-    #     CourseTitle = i
-
-    #     driver.get("http://syllabus.aoyama.ac.jp/")
-    #     driver.find_element_by_id('CPH1_KM').send_keys(CourseTitle)
-
-    #     driver.find_element_by_id('CPH1_rptYB_YB_0').click()
-
-    #     driver.find_element_by_id('CPH1_btnKensaku').click()
-
-    #     html = driver.page_source.encode('utf-8')
-    #     soup = BeautifulSoup(html, "html.parser")
-
-    #     result = int(soup.select("#CPH1_lblHitMsg")[0].getText())
-    #     if (result != 0):
-    #         for i in range(result):
-    #             test = soup.select(
-    #                 "#CPH1_gvw_kensaku_lblJigen_" + str(i))[0].get_text()
-    #             a = test.find("[")
-    #             b = test.find("]")
-    #             c = test.find("（")
-    #             db_campus = test[a+1:b-a]
-    #             db_day = test[b+1:b+2]
-    #             db_time = mojimoji.zen_to_han(test[b+2:b+3])
-    #             db_semester = test[c+1:c+2]
-
-    #             db_title = soup.select(
-    #                 "#CPH1_gvw_kensaku_lblKamoku_" + str(i))[0].get_text()
-    #             db_instructer = soup.select(
-    #                 "#CPH1_gvw_kensaku_lblKyouin_" + str(i))[0].get_text()
-    #             db_detail = "http://syllabus.aoyama.ac.jp/" + \
-    #                 soup.select("#CPH1_gvw_kensaku_lnkShousai_" +
-    #                             str(i))[0].get("href")
-    #             content = Class(db_day, db_time, db_campus, db_semester, db_title, db_instructer, db_detail, datetime.now())
-    #             db_session.add(content)
-    #             db_session.commit()
-
-    #     driver.find_element_by_id('CPH1_rptYB_YB_0').click()
-    #     driver.find_element_by_id('CPH1_rptYB_YB_1').click()
-    #     driver.find_element_by_id('CPH1_btnKensaku').click()
-
-    #     html = driver.page_source.encode('utf-8')
-    #     soup = BeautifulSoup(html, "html.parser")
-
-    #     result = int(soup.select("#CPH1_lblHitMsg")[0].getText())
-    #     if (result != 0):
-    #         for i in range(result):
-    #             test = soup.select(
-    #                 "#CPH1_gvw_kensaku_lblJigen_" + str(i))[0].get_text()
-    #             a = test.find("[")
-    #             b = test.find("]")
-    #             c = test.find("（")
-    #             db_campus = test[a+1:b-a]
-    #             db_day = test[b+1:b+2]
-    #             db_time = mojimoji.zen_to_han(test[b+2:b+3])
-    #             db_semester = test[c+1:c+2]
-
-    #             db_title = soup.select(
-    #                 "#CPH1_gvw_kensaku_lblKamoku_" + str(i))[0].get_text()
-    #             db_instructer = soup.select(
-    #                 "#CPH1_gvw_kensaku_lblKyouin_" + str(i))[0].get_text()
-    #             db_detail = "http://syllabus.aoyama.ac.jp/" + \
-    #                 soup.select("#CPH1_gvw_kensaku_lnkShousai_" +
-    #                             str(i))[0].get("href")
-    #             content = Class(db_day, db_time, db_campus, db_semester, db_title, db_instructer, db_detail, datetime.now())
-    #             db_session.add(content)
-    #             db_session.commit()
-
-    #     driver.find_element_by_id('CPH1_rptYB_YB_1').click()
-    #     driver.find_element_by_id('CPH1_rptYB_YB_2').click()
-
-    #     driver.find_element_by_id('CPH1_btnKensaku').click()
-
-    #     html = driver.page_source.encode('utf-8')
-    #     soup = BeautifulSoup(html, "html.parser")
-
-    #     result = int(soup.select("#CPH1_lblHitMsg")[0].getText())
-    #     if (result != 0):
-    #         for i in range(result):
-    #             test = soup.select(
-    #                 "#CPH1_gvw_kensaku_lblJigen_" + str(i))[0].get_text()
-    #             a = test.find("[")
-    #             b = test.find("]")
-    #             c = test.find("（")
-    #             db_campus = test[a+1:b-a]
-    #             db_day = test[b+1:b+2]
-    #             db_time = mojimoji.zen_to_han(test[b+2:b+3])
-    #             db_semester = test[c+1:c+2]
-
-    #             db_title = soup.select(
-    #                 "#CPH1_gvw_kensaku_lblKamoku_" + str(i))[0].get_text()
-    #             db_instructer = soup.select(
-    #                 "#CPH1_gvw_kensaku_lblKyouin_" + str(i))[0].get_text()
-    #             db_detail = "http://syllabus.aoyama.ac.jp/" + \
-    #                 soup.select("#CPH1_gvw_kensaku_lnkShousai_" +
-    #                             str(i))[0].get("href")
-    #             content = Class(db_day, db_time, db_campus, db_semester, db_title, db_instructer, db_detail, datetime.now())
-    #             db_session.add(content)
-    #             db_session.commit()
-
-    #     driver.find_element_by_id('CPH1_rptYB_YB_2').click()
-    #     driver.find_element_by_id('CPH1_rptYB_YB_3').click()
-
-    #     driver.find_element_by_id('CPH1_btnKensaku').click()
-
-    #     html = driver.page_source.encode('utf-8')
-    #     soup = BeautifulSoup(html, "html.parser")
-
-    #     result = int(soup.select("#CPH1_lblHitMsg")[0].getText())
-    #     if (result != 0):
-    #         for i in range(result):
-    #             test = soup.select(
-    #                 "#CPH1_gvw_kensaku_lblJigen_" + str(i))[0].get_text()
-    #             a = test.find("[")
-    #             b = test.find("]")
-    #             c = test.find("（")
-    #             db_campus = test[a+1:b-a]
-    #             db_day = test[b+1:b+2]
-    #             db_time = mojimoji.zen_to_han(test[b+2:b+3])
-    #             db_semester = test[c+1:c+2]
-
-    #             db_title = soup.select(
-    #                 "#CPH1_gvw_kensaku_lblKamoku_" + str(i))[0].get_text()
-    #             db_instructer = soup.select(
-    #                 "#CPH1_gvw_kensaku_lblKyouin_" + str(i))[0].get_text()
-    #             db_detail = "http://syllabus.aoyama.ac.jp/" + \
-    #                 soup.select("#CPH1_gvw_kensaku_lnkShousai_" +
-    #                             str(i))[0].get("href")
-    #             content = Class(db_day, db_time, db_campus, db_semester, db_title, db_instructer, db_detail, datetime.now())
-    #             db_session.add(content)
-    #             db_session.commit()
-
-    #     driver.find_element_by_id('CPH1_rptYB_YB_3').click()
-    #     driver.find_element_by_id('CPH1_rptYB_YB_4').click()
-
-    #     driver.find_element_by_id('CPH1_btnKensaku').click()
-
-    #     html = driver.page_source.encode('utf-8')
-    #     soup = BeautifulSoup(html, "html.parser")
-
-    #     result = int(soup.select("#CPH1_lblHitMsg")[0].getText())
-    #     if (result != 0):
-    #         for i in range(result):
-    #             test = soup.select(
-    #                 "#CPH1_gvw_kensaku_lblJigen_" + str(i))[0].get_text()
-    #             a = test.find("[")
-    #             b = test.find("]")
-    #             c = test.find("（")
-    #             db_campus = test[a+1:b-a]
-    #             db_day = test[b+1:b+2]
-    #             db_time = mojimoji.zen_to_han(test[b+2:b+3])
-    #             db_semester = test[c+1:c+2]
-
-    #             db_title = soup.select(
-    #                 "#CPH1_gvw_kensaku_lblKamoku_" + str(i))[0].get_text()
-    #             db_instructer = soup.select(
-    #                 "#CPH1_gvw_kensaku_lblKyouin_" + str(i))[0].get_text()
-    #             db_detail = "http://syllabus.aoyama.ac.jp/" + \
-    #                 soup.select("#CPH1_gvw_kensaku_lnkShousai_" +
-    #                             str(i))[0].get("href")
-    #             content = Class(db_day, db_time, db_campus, db_semester, db_title, db_instructer, db_detail, datetime.now())
-    #             db_session.add(content)
-    #             db_session.commit()
-
-    # CourseTitle = "健康・スポーツ演習"
-
-    # # 前期月
-    # for i in range(2):
-    #     driver.get("http://syllabus.aoyama.ac.jp/")
-    #     semester_element = driver.find_element_by_id('CPH1_GKB')
-    #     semester_select_element = Select(semester_element)
-    #     driver.find_element_by_id('CPH1_rptCP_CP_' + str(i)).click()
-    #     semester_select_element.select_by_value('1.1.12')
-    #     driver.find_element_by_id('CPH1_rptYB_YB_0').click()
-
-    #     driver.find_element_by_id('CPH1_KM').send_keys(CourseTitle)
-    #     driver.find_element_by_id('CPH1_btnKensaku').click()
-
-    #     html = driver.page_source.encode('utf-8')
-    #     soup = BeautifulSoup(html, "html.parser")
-
-    #     result = int(soup.select("#CPH1_lblHitMsg")[0].getText())
-    #     if (result != 0):
-    #         for i in range(result):
-    #             test = soup.select(
-    #                 "#CPH1_gvw_kensaku_lblJigen_" + str(i))[0].get_text()
-    #             a = test.find("[")
-    #             b = test.find("]")
-    #             c = test.find("（")
-    #             db_campus = test[a+1:b-a]
-    #             db_day = test[b+1:b+2]
-    #             db_time = mojimoji.zen_to_han(test[b+2:b+3])
-    #             db_semester = test[c+1:c+2]
-    #             db_title = soup.select(
-    #                 "#CPH1_gvw_kensaku_lblKamoku_" + str(i))[0].get_text()
-    #             db_instructer = soup.select(
-    #                 "#CPH1_gvw_kensaku_lblKyouin_" + str(i))[0].get_text()
-    #             db_detail = "http://syllabus.aoyama.ac.jp/" + \
-    #                 soup.select("#CPH1_gvw_kensaku_lnkShousai_" +
-    #                             str(i))[0].get("href")
-    #             content = Class(db_day, db_time, db_campus, db_semester, db_title, db_instructer, db_detail, datetime.now())
-    #             db_session.add(content)
-    #             db_session.commit()
-
-    # # 後期月
-    # for i in range(2):
-    #     driver.get("http://syllabus.aoyama.ac.jp/")
-    #     semester_element = driver.find_element_by_id('CPH1_GKB')
-    #     semester_select_element = Select(semester_element)
-    #     driver.find_element_by_id('CPH1_rptCP_CP_' + str(i)).click()
-    #     semester_select_element.select_by_value('1.2.12')
-    #     driver.find_element_by_id('CPH1_rptYB_YB_0').click()
-
-    #     driver.find_element_by_id('CPH1_KM').send_keys(CourseTitle)
-    #     driver.find_element_by_id('CPH1_btnKensaku').click()
-
-    #     html = driver.page_source.encode('utf-8')
-    #     soup = BeautifulSoup(html, "html.parser")
-
-    #     result = int(soup.select("#CPH1_lblHitMsg")[0].getText())
-    #     if (result != 0):
-    #         for i in range(result):
-    #             test = soup.select(
-    #                 "#CPH1_gvw_kensaku_lblJigen_" + str(i))[0].get_text()
-    #             a = test.find("[")
-    #             b = test.find("]")
-    #             c = test.find("（")
-    #             db_campus = test[a+1:b-a]
-    #             db_day = test[b+1:b+2]
-    #             db_time = mojimoji.zen_to_han(test[b+2:b+3])
-    #             db_semester = test[c+1:c+2]
-    #             db_title = soup.select(
-    #                 "#CPH1_gvw_kensaku_lblKamoku_" + str(i))[0].get_text()
-    #             db_instructer = soup.select(
-    #                 "#CPH1_gvw_kensaku_lblKyouin_" + str(i))[0].get_text()
-    #             db_detail = "http://syllabus.aoyama.ac.jp/" + \
-    #                 soup.select("#CPH1_gvw_kensaku_lnkShousai_" +
-    #                             str(i))[0].get("href")
-    #             content = Class(db_day, db_time, db_campus, db_semester, db_title, db_instructer, db_detail, datetime.now())
-    #             db_session.add(content)
-    #             db_session.commit()
-
-    # # 前期火
-    # for i in range(2):
-    #     driver.get("http://syllabus.aoyama.ac.jp/")
-    #     semester_element = driver.find_element_by_id('CPH1_GKB')
-    #     semester_select_element = Select(semester_element)
-    #     driver.find_element_by_id('CPH1_rptCP_CP_' + str(i)).click()
-    #     semester_select_element.select_by_value('1.1.12')
-    #     driver.find_element_by_id('CPH1_rptYB_YB_1').click()
-
-    #     driver.find_element_by_id('CPH1_KM').send_keys(CourseTitle)
-    #     driver.find_element_by_id('CPH1_btnKensaku').click()
-
-    #     html = driver.page_source.encode('utf-8')
-    #     soup = BeautifulSoup(html, "html.parser")
-
-    #     result = int(soup.select("#CPH1_lblHitMsg")[0].getText())
-    #     if (result != 0):
-    #         for i in range(result):
-    #             test = soup.select(
-    #                 "#CPH1_gvw_kensaku_lblJigen_" + str(i))[0].get_text()
-    #             a = test.find("[")
-    #             b = test.find("]")
-    #             c = test.find("（")
-    #             db_campus = test[a+1:b-a]
-    #             db_day = test[b+1:b+2]
-    #             db_time = mojimoji.zen_to_han(test[b+2:b+3])
-    #             db_semester = test[c+1:c+2]
-    #             db_title = soup.select(
-    #                 "#CPH1_gvw_kensaku_lblKamoku_" + str(i))[0].get_text()
-    #             db_instructer = soup.select(
-    #                 "#CPH1_gvw_kensaku_lblKyouin_" + str(i))[0].get_text()
-    #             db_detail = "http://syllabus.aoyama.ac.jp/" + \
-    #                 soup.select("#CPH1_gvw_kensaku_lnkShousai_" +
-    #                             str(i))[0].get("href")
-    #             content = Class(db_day, db_time, db_campus, db_semester, db_title, db_instructer, db_detail, datetime.now())
-    #             db_session.add(content)
-    #             db_session.commit()
-
-    # # 後期火
-    # for i in range(2):
-    #     driver.get("http://syllabus.aoyama.ac.jp/")
-    #     semester_element = driver.find_element_by_id('CPH1_GKB')
-    #     semester_select_element = Select(semester_element)
-    #     driver.find_element_by_id('CPH1_rptCP_CP_' + str(i)).click()
-    #     semester_select_element.select_by_value('1.2.12')
-    #     driver.find_element_by_id('CPH1_rptYB_YB_1').click()
-
-    #     driver.find_element_by_id('CPH1_KM').send_keys(CourseTitle)
-    #     driver.find_element_by_id('CPH1_btnKensaku').click()
-
-    #     html = driver.page_source.encode('utf-8')
-    #     soup = BeautifulSoup(html, "html.parser")
-
-    #     result = int(soup.select("#CPH1_lblHitMsg")[0].getText())
-    #     if (result != 0):
-    #         for i in range(result):
-    #             test = soup.select(
-    #                 "#CPH1_gvw_kensaku_lblJigen_" + str(i))[0].get_text()
-    #             a = test.find("[")
-    #             b = test.find("]")
-    #             c = test.find("（")
-    #             db_campus = test[a+1:b-a]
-    #             db_day = test[b+1:b+2]
-    #             db_time = mojimoji.zen_to_han(test[b+2:b+3])
-    #             db_semester = test[c+1:c+2]
-    #             db_title = soup.select(
-    #                 "#CPH1_gvw_kensaku_lblKamoku_" + str(i))[0].get_text()
-    #             db_instructer = soup.select(
-    #                 "#CPH1_gvw_kensaku_lblKyouin_" + str(i))[0].get_text()
-    #             db_detail = "http://syllabus.aoyama.ac.jp/" + \
-    #                 soup.select("#CPH1_gvw_kensaku_lnkShousai_" +
-    #                             str(i))[0].get("href")
-    #             content = Class(db_day, db_time, db_campus, db_semester, db_title, db_instructer, db_detail, datetime.now())
-    #             db_session.add(content)
-    #             db_session.commit()
-
-    # # 前期水
-    # for i in range(2):
-    #     driver.get("http://syllabus.aoyama.ac.jp/")
-    #     semester_element = driver.find_element_by_id('CPH1_GKB')
-    #     semester_select_element = Select(semester_element)
-    #     driver.find_element_by_id('CPH1_rptCP_CP_' + str(i)).click()
-    #     semester_select_element.select_by_value('1.1.12')
-    #     driver.find_element_by_id('CPH1_rptYB_YB_2').click()
-
-    #     driver.find_element_by_id('CPH1_KM').send_keys(CourseTitle)
-    #     driver.find_element_by_id('CPH1_btnKensaku').click()
-
-    #     html = driver.page_source.encode('utf-8')
-    #     soup = BeautifulSoup(html, "html.parser")
-
-    #     result = int(soup.select("#CPH1_lblHitMsg")[0].getText())
-    #     if (result != 0):
-    #         for i in range(result):
-    #             test = soup.select(
-    #                 "#CPH1_gvw_kensaku_lblJigen_" + str(i))[0].get_text()
-    #             a = test.find("[")
-    #             b = test.find("]")
-    #             c = test.find("（")
-    #             db_campus = test[a+1:b-a]
-    #             db_day = test[b+1:b+2]
-    #             db_time = mojimoji.zen_to_han(test[b+2:b+3])
-    #             db_semester = test[c+1:c+2]
-    #             db_title = soup.select(
-    #                 "#CPH1_gvw_kensaku_lblKamoku_" + str(i))[0].get_text()
-    #             db_instructer = soup.select(
-    #                 "#CPH1_gvw_kensaku_lblKyouin_" + str(i))[0].get_text()
-    #             db_detail = "http://syllabus.aoyama.ac.jp/" + \
-    #                 soup.select("#CPH1_gvw_kensaku_lnkShousai_" +
-    #                             str(i))[0].get("href")
-    #             content = Class(db_day, db_time, db_campus, db_semester, db_title, db_instructer, db_detail, datetime.now())
-    #             db_session.add(content)
-    #             db_session.commit()
-
-    # # 後期水
-    # for i in range(2):
-    #     driver.get("http://syllabus.aoyama.ac.jp/")
-    #     semester_element = driver.find_element_by_id('CPH1_GKB')
-    #     semester_select_element = Select(semester_element)
-    #     driver.find_element_by_id('CPH1_rptCP_CP_' + str(i)).click()
-    #     semester_select_element.select_by_value('1.2.12')
-    #     driver.find_element_by_id('CPH1_rptYB_YB_2').click()
-
-    #     driver.find_element_by_id('CPH1_KM').send_keys(CourseTitle)
-    #     driver.find_element_by_id('CPH1_btnKensaku').click()
-
-    #     html = driver.page_source.encode('utf-8')
-    #     soup = BeautifulSoup(html, "html.parser")
-
-    #     result = int(soup.select("#CPH1_lblHitMsg")[0].getText())
-    #     if (result != 0):
-    #         for i in range(result):
-    #             test = soup.select(
-    #                 "#CPH1_gvw_kensaku_lblJigen_" + str(i))[0].get_text()
-    #             a = test.find("[")
-    #             b = test.find("]")
-    #             c = test.find("（")
-    #             db_campus = test[a+1:b-a]
-    #             db_day = test[b+1:b+2]
-    #             db_time = mojimoji.zen_to_han(test[b+2:b+3])
-    #             db_semester = test[c+1:c+2]
-    #             db_title = soup.select(
-    #                 "#CPH1_gvw_kensaku_lblKamoku_" + str(i))[0].get_text()
-    #             db_instructer = soup.select(
-    #                 "#CPH1_gvw_kensaku_lblKyouin_" + str(i))[0].get_text()
-    #             db_detail = "http://syllabus.aoyama.ac.jp/" + \
-    #                 soup.select("#CPH1_gvw_kensaku_lnkShousai_" +
-    #                             str(i))[0].get("href")
-    #             content = Class(db_day, db_time, db_campus, db_semester, db_title, db_instructer, db_detail, datetime.now())
-    #             db_session.add(content)
-    #             db_session.commit()
-
-    # # 前期木
-    # for i in range(2):
-    #     driver.get("http://syllabus.aoyama.ac.jp/")
-    #     semester_element = driver.find_element_by_id('CPH1_GKB')
-    #     semester_select_element = Select(semester_element)
-    #     driver.find_element_by_id('CPH1_rptCP_CP_' + str(i)).click()
-    #     semester_select_element.select_by_value('1.1.12')
-    #     driver.find_element_by_id('CPH1_rptYB_YB_3').click()
-
-    #     driver.find_element_by_id('CPH1_KM').send_keys(CourseTitle)
-    #     driver.find_element_by_id('CPH1_btnKensaku').click()
-
-    #     html = driver.page_source.encode('utf-8')
-    #     soup = BeautifulSoup(html, "html.parser")
-
-    #     result = int(soup.select("#CPH1_lblHitMsg")[0].getText())
-    #     if (result != 0):
-    #         for i in range(result):
-    #             test = soup.select(
-    #                 "#CPH1_gvw_kensaku_lblJigen_" + str(i))[0].get_text()
-    #             a = test.find("[")
-    #             b = test.find("]")
-    #             c = test.find("（")
-    #             db_campus = test[a+1:b-a]
-    #             db_day = test[b+1:b+2]
-    #             db_time = mojimoji.zen_to_han(test[b+2:b+3])
-    #             db_semester = test[c+1:c+2]
-    #             db_title = soup.select(
-    #                 "#CPH1_gvw_kensaku_lblKamoku_" + str(i))[0].get_text()
-    #             db_instructer = soup.select(
-    #                 "#CPH1_gvw_kensaku_lblKyouin_" + str(i))[0].get_text()
-    #             db_detail = "http://syllabus.aoyama.ac.jp/" + \
-    #                 soup.select("#CPH1_gvw_kensaku_lnkShousai_" +
-    #                             str(i))[0].get("href")
-    #             content = Class(db_day, db_time, db_campus, db_semester, db_title, db_instructer, db_detail, datetime.now())
-    #             db_session.add(content)
-    #             db_session.commit()
-
-    # # 後期木
-    # for i in range(2):
-    #     driver.get("http://syllabus.aoyama.ac.jp/")
-    #     semester_element = driver.find_element_by_id('CPH1_GKB')
-    #     semester_select_element = Select(semester_element)
-    #     driver.find_element_by_id('CPH1_rptCP_CP_' + str(i)).click()
-    #     semester_select_element.select_by_value('1.2.12')
-    #     driver.find_element_by_id('CPH1_rptYB_YB_3').click()
-
-    #     driver.find_element_by_id('CPH1_KM').send_keys(CourseTitle)
-    #     driver.find_element_by_id('CPH1_btnKensaku').click()
-
-    #     html = driver.page_source.encode('utf-8')
-    #     soup = BeautifulSoup(html, "html.parser")
-
-    #     result = int(soup.select("#CPH1_lblHitMsg")[0].getText())
-    #     if (result != 0):
-    #         for i in range(result):
-    #             test = soup.select(
-    #                 "#CPH1_gvw_kensaku_lblJigen_" + str(i))[0].get_text()
-    #             a = test.find("[")
-    #             b = test.find("]")
-    #             c = test.find("（")
-    #             db_campus = test[a+1:b-a]
-    #             db_day = test[b+1:b+2]
-    #             db_time = mojimoji.zen_to_han(test[b+2:b+3])
-    #             db_semester = test[c+1:c+2]
-    #             db_title = soup.select(
-    #                 "#CPH1_gvw_kensaku_lblKamoku_" + str(i))[0].get_text()
-    #             db_instructer = soup.select(
-    #                 "#CPH1_gvw_kensaku_lblKyouin_" + str(i))[0].get_text()
-    #             db_detail = "http://syllabus.aoyama.ac.jp/" + \
-    #                 soup.select("#CPH1_gvw_kensaku_lnkShousai_" +
-    #                             str(i))[0].get("href")
-    #             content = Class(db_day, db_time, db_campus, db_semester, db_title, db_instructer, db_detail, datetime.now())
-    #             db_session.add(content)
-    #             db_session.commit()
-
-    # # 前期金
-    # for i in range(2):
-    #     driver.get("http://syllabus.aoyama.ac.jp/")
-    #     semester_element = driver.find_element_by_id('CPH1_GKB')
-    #     semester_select_element = Select(semester_element)
-    #     driver.find_element_by_id('CPH1_rptCP_CP_' + str(i)).click()
-    #     semester_select_element.select_by_value('1.1.12')
-    #     driver.find_element_by_id('CPH1_rptYB_YB_4').click()
-
-    #     driver.find_element_by_id('CPH1_KM').send_keys(CourseTitle)
-    #     driver.find_element_by_id('CPH1_btnKensaku').click()
-
-    #     html = driver.page_source.encode('utf-8')
-    #     soup = BeautifulSoup(html, "html.parser")
-
-    #     result = int(soup.select("#CPH1_lblHitMsg")[0].getText())
-    #     if (result != 0):
-    #         for i in range(result):
-    #             test = soup.select(
-    #                 "#CPH1_gvw_kensaku_lblJigen_" + str(i))[0].get_text()
-    #             a = test.find("[")
-    #             b = test.find("]")
-    #             c = test.find("（")
-    #             db_campus = test[a+1:b-a]
-    #             db_day = test[b+1:b+2]
-    #             db_time = mojimoji.zen_to_han(test[b+2:b+3])
-    #             db_semester = test[c+1:c+2]
-    #             db_title = soup.select(
-    #                 "#CPH1_gvw_kensaku_lblKamoku_" + str(i))[0].get_text()
-    #             db_instructer = soup.select(
-    #                 "#CPH1_gvw_kensaku_lblKyouin_" + str(i))[0].get_text()
-    #             db_detail = "http://syllabus.aoyama.ac.jp/" + \
-    #                 soup.select("#CPH1_gvw_kensaku_lnkShousai_" +
-    #                             str(i))[0].get("href")
-    #             content = Class(db_day, db_time, db_campus, db_semester, db_title, db_instructer, db_detail, datetime.now())
-    #             db_session.add(content)
-    #             db_session.commit()
-
-    # # 後期金
-    # for i in range(2):
-    #     driver.get("http://syllabus.aoyama.ac.jp/")
-    #     semester_element = driver.find_element_by_id('CPH1_GKB')
-    #     semester_select_element = Select(semester_element)
-    #     driver.find_element_by_id('CPH1_rptCP_CP_' + str(i)).click()
-    #     semester_select_element.select_by_value('1.2.12')
-    #     driver.find_element_by_id('CPH1_rptYB_YB_4').click()
-
-    #     driver.find_element_by_id('CPH1_KM').send_keys(CourseTitle)
-    #     driver.find_element_by_id('CPH1_btnKensaku').click()
-
-    #     html = driver.page_source.encode('utf-8')
-    #     soup = BeautifulSoup(html, "html.parser")
-
-    #     result = int(soup.select("#CPH1_lblHitMsg")[0].getText())
-    #     if (result != 0):
-    #         for i in range(result):
-    #             test = soup.select(
-    #                 "#CPH1_gvw_kensaku_lblJigen_" + str(i))[0].get_text()
-    #             a = test.find("[")
-    #             b = test.find("]")
-    #             c = test.find("（")
-    #             db_campus = test[a+1:b-a]
-    #             db_day = test[b+1:b+2]
-    #             db_time = mojimoji.zen_to_han(test[b+2:b+3])
-    #             db_semester = test[c+1:c+2]
-    #             db_title = soup.select(
-    #                 "#CPH1_gvw_kensaku_lblKamoku_" + str(i))[0].get_text()
-    #             db_instructer = soup.select(
-    #                 "#CPH1_gvw_kensaku_lblKyouin_" + str(i))[0].get_text()
-    #             db_detail = "http://syllabus.aoyama.ac.jp/" + \
-    #                 soup.select("#CPH1_gvw_kensaku_lnkShousai_" +
-    #                             str(i))[0].get("href")
-    #             content = Class(db_day, db_time, db_campus, db_semester, db_title, db_instructer, db_detail, datetime.now())
-    #             db_session.add(content)
-    #             db_session.commit()
-
+    test2 = ["フレッシャーズ・セミナー", "自己理解", "現代社会の諸問題", "科学・技術の視点", "歴史と人間"]
+    for i in test2:
+        CourseTitle = i
+
+        driver.get("http://syllabus.aoyama.ac.jp/")
+        driver.find_element_by_id('CPH1_KM').send_keys(CourseTitle)
+
+        driver.find_element_by_id('CPH1_rptYB_YB_0').click()
+
+        driver.find_element_by_id('CPH1_btnKensaku').click()
+
+        html = driver.page_source.encode('utf-8')
+        soup = BeautifulSoup(html, "html.parser")
+
+        result = int(soup.select("#CPH1_lblHitMsg")[0].getText())
+        if (result != 0):
+            for i in range(result):
+                test = soup.select(
+                    "#CPH1_gvw_kensaku_lblJigen_" + str(i))[0].get_text()
+                a = test.find("[")
+                b = test.find("]")
+                c = test.find("（")
+                db_campus = test[a+1:b-a]
+                db_day = test[b+1:b+2]
+                db_time = mojimoji.zen_to_han(test[b+2:b+3])
+                db_semester = test[c+1:c+2]
+
+                db_title = soup.select(
+                    "#CPH1_gvw_kensaku_lblKamoku_" + str(i))[0].get_text()
+                db_instructer = soup.select(
+                    "#CPH1_gvw_kensaku_lblKyouin_" + str(i))[0].get_text()
+                db_detail = "http://syllabus.aoyama.ac.jp/" + \
+                    soup.select("#CPH1_gvw_kensaku_lnkShousai_" +
+                                str(i))[0].get("href")
+                content = Class(db_day, db_time, db_campus, db_semester, db_title, db_instructer, db_detail, datetime.now())
+                db_session.add(content)
+                db_session.commit()
+
+        driver.find_element_by_id('CPH1_rptYB_YB_0').click()
+        driver.find_element_by_id('CPH1_rptYB_YB_1').click()
+        driver.find_element_by_id('CPH1_btnKensaku').click()
+
+        html = driver.page_source.encode('utf-8')
+        soup = BeautifulSoup(html, "html.parser")
+
+        result = int(soup.select("#CPH1_lblHitMsg")[0].getText())
+        if (result != 0):
+            for i in range(result):
+                test = soup.select(
+                    "#CPH1_gvw_kensaku_lblJigen_" + str(i))[0].get_text()
+                a = test.find("[")
+                b = test.find("]")
+                c = test.find("（")
+                db_campus = test[a+1:b-a]
+                db_day = test[b+1:b+2]
+                db_time = mojimoji.zen_to_han(test[b+2:b+3])
+                db_semester = test[c+1:c+2]
+
+                db_title = soup.select(
+                    "#CPH1_gvw_kensaku_lblKamoku_" + str(i))[0].get_text()
+                db_instructer = soup.select(
+                    "#CPH1_gvw_kensaku_lblKyouin_" + str(i))[0].get_text()
+                db_detail = "http://syllabus.aoyama.ac.jp/" + \
+                    soup.select("#CPH1_gvw_kensaku_lnkShousai_" +
+                                str(i))[0].get("href")
+                content = Class(db_day, db_time, db_campus, db_semester, db_title, db_instructer, db_detail, datetime.now())
+                db_session.add(content)
+                db_session.commit()
+
+        driver.find_element_by_id('CPH1_rptYB_YB_1').click()
+        driver.find_element_by_id('CPH1_rptYB_YB_2').click()
+
+        driver.find_element_by_id('CPH1_btnKensaku').click()
+
+        html = driver.page_source.encode('utf-8')
+        soup = BeautifulSoup(html, "html.parser")
+
+        result = int(soup.select("#CPH1_lblHitMsg")[0].getText())
+        if (result != 0):
+            for i in range(result):
+                test = soup.select(
+                    "#CPH1_gvw_kensaku_lblJigen_" + str(i))[0].get_text()
+                a = test.find("[")
+                b = test.find("]")
+                c = test.find("（")
+                db_campus = test[a+1:b-a]
+                db_day = test[b+1:b+2]
+                db_time = mojimoji.zen_to_han(test[b+2:b+3])
+                db_semester = test[c+1:c+2]
+
+                db_title = soup.select(
+                    "#CPH1_gvw_kensaku_lblKamoku_" + str(i))[0].get_text()
+                db_instructer = soup.select(
+                    "#CPH1_gvw_kensaku_lblKyouin_" + str(i))[0].get_text()
+                db_detail = "http://syllabus.aoyama.ac.jp/" + \
+                    soup.select("#CPH1_gvw_kensaku_lnkShousai_" +
+                                str(i))[0].get("href")
+                content = Class(db_day, db_time, db_campus, db_semester, db_title, db_instructer, db_detail, datetime.now())
+                db_session.add(content)
+                db_session.commit()
+
+        driver.find_element_by_id('CPH1_rptYB_YB_2').click()
+        driver.find_element_by_id('CPH1_rptYB_YB_3').click()
+
+        driver.find_element_by_id('CPH1_btnKensaku').click()
+
+        html = driver.page_source.encode('utf-8')
+        soup = BeautifulSoup(html, "html.parser")
+
+        result = int(soup.select("#CPH1_lblHitMsg")[0].getText())
+        if (result != 0):
+            for i in range(result):
+                test = soup.select(
+                    "#CPH1_gvw_kensaku_lblJigen_" + str(i))[0].get_text()
+                a = test.find("[")
+                b = test.find("]")
+                c = test.find("（")
+                db_campus = test[a+1:b-a]
+                db_day = test[b+1:b+2]
+                db_time = mojimoji.zen_to_han(test[b+2:b+3])
+                db_semester = test[c+1:c+2]
+
+                db_title = soup.select(
+                    "#CPH1_gvw_kensaku_lblKamoku_" + str(i))[0].get_text()
+                db_instructer = soup.select(
+                    "#CPH1_gvw_kensaku_lblKyouin_" + str(i))[0].get_text()
+                db_detail = "http://syllabus.aoyama.ac.jp/" + \
+                    soup.select("#CPH1_gvw_kensaku_lnkShousai_" +
+                                str(i))[0].get("href")
+                content = Class(db_day, db_time, db_campus, db_semester, db_title, db_instructer, db_detail, datetime.now())
+                db_session.add(content)
+                db_session.commit()
+
+        driver.find_element_by_id('CPH1_rptYB_YB_3').click()
+        driver.find_element_by_id('CPH1_rptYB_YB_4').click()
+
+        driver.find_element_by_id('CPH1_btnKensaku').click()
+
+        html = driver.page_source.encode('utf-8')
+        soup = BeautifulSoup(html, "html.parser")
+
+        result = int(soup.select("#CPH1_lblHitMsg")[0].getText())
+        if (result != 0):
+            for i in range(result):
+                test = soup.select(
+                    "#CPH1_gvw_kensaku_lblJigen_" + str(i))[0].get_text()
+                a = test.find("[")
+                b = test.find("]")
+                c = test.find("（")
+                db_campus = test[a+1:b-a]
+                db_day = test[b+1:b+2]
+                db_time = mojimoji.zen_to_han(test[b+2:b+3])
+                db_semester = test[c+1:c+2]
+
+                db_title = soup.select(
+                    "#CPH1_gvw_kensaku_lblKamoku_" + str(i))[0].get_text()
+                db_instructer = soup.select(
+                    "#CPH1_gvw_kensaku_lblKyouin_" + str(i))[0].get_text()
+                db_detail = "http://syllabus.aoyama.ac.jp/" + \
+                    soup.select("#CPH1_gvw_kensaku_lnkShousai_" +
+                                str(i))[0].get("href")
+                content = Class(db_day, db_time, db_campus, db_semester, db_title, db_instructer, db_detail, datetime.now())
+                db_session.add(content)
+                db_session.commit()
+
+    CourseTitle = "健康・スポーツ演習"
+
+    # 前期月
+    for i in range(2):
+        driver.get("http://syllabus.aoyama.ac.jp/")
+        semester_element = driver.find_element_by_id('CPH1_GKB')
+        semester_select_element = Select(semester_element)
+        driver.find_element_by_id('CPH1_rptCP_CP_' + str(i)).click()
+        semester_select_element.select_by_value('1.1.12')
+        driver.find_element_by_id('CPH1_rptYB_YB_0').click()
+
+        driver.find_element_by_id('CPH1_KM').send_keys(CourseTitle)
+        driver.find_element_by_id('CPH1_btnKensaku').click()
+
+        html = driver.page_source.encode('utf-8')
+        soup = BeautifulSoup(html, "html.parser")
+
+        result = int(soup.select("#CPH1_lblHitMsg")[0].getText())
+        if (result != 0):
+            for i in range(result):
+                test = soup.select(
+                    "#CPH1_gvw_kensaku_lblJigen_" + str(i))[0].get_text()
+                a = test.find("[")
+                b = test.find("]")
+                c = test.find("（")
+                db_campus = test[a+1:b-a]
+                db_day = test[b+1:b+2]
+                db_time = mojimoji.zen_to_han(test[b+2:b+3])
+                db_semester = test[c+1:c+2]
+                db_title = soup.select(
+                    "#CPH1_gvw_kensaku_lblKamoku_" + str(i))[0].get_text()
+                db_instructer = soup.select(
+                    "#CPH1_gvw_kensaku_lblKyouin_" + str(i))[0].get_text()
+                db_detail = "http://syllabus.aoyama.ac.jp/" + \
+                    soup.select("#CPH1_gvw_kensaku_lnkShousai_" +
+                                str(i))[0].get("href")
+                content = Class(db_day, db_time, db_campus, db_semester, db_title, db_instructer, db_detail, datetime.now())
+                db_session.add(content)
+                db_session.commit()
+
+    # 後期月
+    for i in range(2):
+        driver.get("http://syllabus.aoyama.ac.jp/")
+        semester_element = driver.find_element_by_id('CPH1_GKB')
+        semester_select_element = Select(semester_element)
+        driver.find_element_by_id('CPH1_rptCP_CP_' + str(i)).click()
+        semester_select_element.select_by_value('1.2.12')
+        driver.find_element_by_id('CPH1_rptYB_YB_0').click()
+
+        driver.find_element_by_id('CPH1_KM').send_keys(CourseTitle)
+        driver.find_element_by_id('CPH1_btnKensaku').click()
+
+        html = driver.page_source.encode('utf-8')
+        soup = BeautifulSoup(html, "html.parser")
+
+        result = int(soup.select("#CPH1_lblHitMsg")[0].getText())
+        if (result != 0):
+            for i in range(result):
+                test = soup.select(
+                    "#CPH1_gvw_kensaku_lblJigen_" + str(i))[0].get_text()
+                a = test.find("[")
+                b = test.find("]")
+                c = test.find("（")
+                db_campus = test[a+1:b-a]
+                db_day = test[b+1:b+2]
+                db_time = mojimoji.zen_to_han(test[b+2:b+3])
+                db_semester = test[c+1:c+2]
+                db_title = soup.select(
+                    "#CPH1_gvw_kensaku_lblKamoku_" + str(i))[0].get_text()
+                db_instructer = soup.select(
+                    "#CPH1_gvw_kensaku_lblKyouin_" + str(i))[0].get_text()
+                db_detail = "http://syllabus.aoyama.ac.jp/" + \
+                    soup.select("#CPH1_gvw_kensaku_lnkShousai_" +
+                                str(i))[0].get("href")
+                content = Class(db_day, db_time, db_campus, db_semester, db_title, db_instructer, db_detail, datetime.now())
+                db_session.add(content)
+                db_session.commit()
+
+    # 前期火
+    for i in range(2):
+        driver.get("http://syllabus.aoyama.ac.jp/")
+        semester_element = driver.find_element_by_id('CPH1_GKB')
+        semester_select_element = Select(semester_element)
+        driver.find_element_by_id('CPH1_rptCP_CP_' + str(i)).click()
+        semester_select_element.select_by_value('1.1.12')
+        driver.find_element_by_id('CPH1_rptYB_YB_1').click()
+
+        driver.find_element_by_id('CPH1_KM').send_keys(CourseTitle)
+        driver.find_element_by_id('CPH1_btnKensaku').click()
+
+        html = driver.page_source.encode('utf-8')
+        soup = BeautifulSoup(html, "html.parser")
+
+        result = int(soup.select("#CPH1_lblHitMsg")[0].getText())
+        if (result != 0):
+            for i in range(result):
+                test = soup.select(
+                    "#CPH1_gvw_kensaku_lblJigen_" + str(i))[0].get_text()
+                a = test.find("[")
+                b = test.find("]")
+                c = test.find("（")
+                db_campus = test[a+1:b-a]
+                db_day = test[b+1:b+2]
+                db_time = mojimoji.zen_to_han(test[b+2:b+3])
+                db_semester = test[c+1:c+2]
+                db_title = soup.select(
+                    "#CPH1_gvw_kensaku_lblKamoku_" + str(i))[0].get_text()
+                db_instructer = soup.select(
+                    "#CPH1_gvw_kensaku_lblKyouin_" + str(i))[0].get_text()
+                db_detail = "http://syllabus.aoyama.ac.jp/" + \
+                    soup.select("#CPH1_gvw_kensaku_lnkShousai_" +
+                                str(i))[0].get("href")
+                content = Class(db_day, db_time, db_campus, db_semester, db_title, db_instructer, db_detail, datetime.now())
+                db_session.add(content)
+                db_session.commit()
+
+    # 後期火
+    for i in range(2):
+        driver.get("http://syllabus.aoyama.ac.jp/")
+        semester_element = driver.find_element_by_id('CPH1_GKB')
+        semester_select_element = Select(semester_element)
+        driver.find_element_by_id('CPH1_rptCP_CP_' + str(i)).click()
+        semester_select_element.select_by_value('1.2.12')
+        driver.find_element_by_id('CPH1_rptYB_YB_1').click()
+
+        driver.find_element_by_id('CPH1_KM').send_keys(CourseTitle)
+        driver.find_element_by_id('CPH1_btnKensaku').click()
+
+        html = driver.page_source.encode('utf-8')
+        soup = BeautifulSoup(html, "html.parser")
+
+        result = int(soup.select("#CPH1_lblHitMsg")[0].getText())
+        if (result != 0):
+            for i in range(result):
+                test = soup.select(
+                    "#CPH1_gvw_kensaku_lblJigen_" + str(i))[0].get_text()
+                a = test.find("[")
+                b = test.find("]")
+                c = test.find("（")
+                db_campus = test[a+1:b-a]
+                db_day = test[b+1:b+2]
+                db_time = mojimoji.zen_to_han(test[b+2:b+3])
+                db_semester = test[c+1:c+2]
+                db_title = soup.select(
+                    "#CPH1_gvw_kensaku_lblKamoku_" + str(i))[0].get_text()
+                db_instructer = soup.select(
+                    "#CPH1_gvw_kensaku_lblKyouin_" + str(i))[0].get_text()
+                db_detail = "http://syllabus.aoyama.ac.jp/" + \
+                    soup.select("#CPH1_gvw_kensaku_lnkShousai_" +
+                                str(i))[0].get("href")
+                content = Class(db_day, db_time, db_campus, db_semester, db_title, db_instructer, db_detail, datetime.now())
+                db_session.add(content)
+                db_session.commit()
+
+    # 前期水
+    for i in range(2):
+        driver.get("http://syllabus.aoyama.ac.jp/")
+        semester_element = driver.find_element_by_id('CPH1_GKB')
+        semester_select_element = Select(semester_element)
+        driver.find_element_by_id('CPH1_rptCP_CP_' + str(i)).click()
+        semester_select_element.select_by_value('1.1.12')
+        driver.find_element_by_id('CPH1_rptYB_YB_2').click()
+
+        driver.find_element_by_id('CPH1_KM').send_keys(CourseTitle)
+        driver.find_element_by_id('CPH1_btnKensaku').click()
+
+        html = driver.page_source.encode('utf-8')
+        soup = BeautifulSoup(html, "html.parser")
+
+        result = int(soup.select("#CPH1_lblHitMsg")[0].getText())
+        if (result != 0):
+            for i in range(result):
+                test = soup.select(
+                    "#CPH1_gvw_kensaku_lblJigen_" + str(i))[0].get_text()
+                a = test.find("[")
+                b = test.find("]")
+                c = test.find("（")
+                db_campus = test[a+1:b-a]
+                db_day = test[b+1:b+2]
+                db_time = mojimoji.zen_to_han(test[b+2:b+3])
+                db_semester = test[c+1:c+2]
+                db_title = soup.select(
+                    "#CPH1_gvw_kensaku_lblKamoku_" + str(i))[0].get_text()
+                db_instructer = soup.select(
+                    "#CPH1_gvw_kensaku_lblKyouin_" + str(i))[0].get_text()
+                db_detail = "http://syllabus.aoyama.ac.jp/" + \
+                    soup.select("#CPH1_gvw_kensaku_lnkShousai_" +
+                                str(i))[0].get("href")
+                content = Class(db_day, db_time, db_campus, db_semester, db_title, db_instructer, db_detail, datetime.now())
+                db_session.add(content)
+                db_session.commit()
+
+    # 後期水
+    for i in range(2):
+        driver.get("http://syllabus.aoyama.ac.jp/")
+        semester_element = driver.find_element_by_id('CPH1_GKB')
+        semester_select_element = Select(semester_element)
+        driver.find_element_by_id('CPH1_rptCP_CP_' + str(i)).click()
+        semester_select_element.select_by_value('1.2.12')
+        driver.find_element_by_id('CPH1_rptYB_YB_2').click()
+
+        driver.find_element_by_id('CPH1_KM').send_keys(CourseTitle)
+        driver.find_element_by_id('CPH1_btnKensaku').click()
+
+        html = driver.page_source.encode('utf-8')
+        soup = BeautifulSoup(html, "html.parser")
+
+        result = int(soup.select("#CPH1_lblHitMsg")[0].getText())
+        if (result != 0):
+            for i in range(result):
+                test = soup.select(
+                    "#CPH1_gvw_kensaku_lblJigen_" + str(i))[0].get_text()
+                a = test.find("[")
+                b = test.find("]")
+                c = test.find("（")
+                db_campus = test[a+1:b-a]
+                db_day = test[b+1:b+2]
+                db_time = mojimoji.zen_to_han(test[b+2:b+3])
+                db_semester = test[c+1:c+2]
+                db_title = soup.select(
+                    "#CPH1_gvw_kensaku_lblKamoku_" + str(i))[0].get_text()
+                db_instructer = soup.select(
+                    "#CPH1_gvw_kensaku_lblKyouin_" + str(i))[0].get_text()
+                db_detail = "http://syllabus.aoyama.ac.jp/" + \
+                    soup.select("#CPH1_gvw_kensaku_lnkShousai_" +
+                                str(i))[0].get("href")
+                content = Class(db_day, db_time, db_campus, db_semester, db_title, db_instructer, db_detail, datetime.now())
+                db_session.add(content)
+                db_session.commit()
+
+    # 前期木
+    for i in range(2):
+        driver.get("http://syllabus.aoyama.ac.jp/")
+        semester_element = driver.find_element_by_id('CPH1_GKB')
+        semester_select_element = Select(semester_element)
+        driver.find_element_by_id('CPH1_rptCP_CP_' + str(i)).click()
+        semester_select_element.select_by_value('1.1.12')
+        driver.find_element_by_id('CPH1_rptYB_YB_3').click()
+
+        driver.find_element_by_id('CPH1_KM').send_keys(CourseTitle)
+        driver.find_element_by_id('CPH1_btnKensaku').click()
+
+        html = driver.page_source.encode('utf-8')
+        soup = BeautifulSoup(html, "html.parser")
+
+        result = int(soup.select("#CPH1_lblHitMsg")[0].getText())
+        if (result != 0):
+            for i in range(result):
+                test = soup.select(
+                    "#CPH1_gvw_kensaku_lblJigen_" + str(i))[0].get_text()
+                a = test.find("[")
+                b = test.find("]")
+                c = test.find("（")
+                db_campus = test[a+1:b-a]
+                db_day = test[b+1:b+2]
+                db_time = mojimoji.zen_to_han(test[b+2:b+3])
+                db_semester = test[c+1:c+2]
+                db_title = soup.select(
+                    "#CPH1_gvw_kensaku_lblKamoku_" + str(i))[0].get_text()
+                db_instructer = soup.select(
+                    "#CPH1_gvw_kensaku_lblKyouin_" + str(i))[0].get_text()
+                db_detail = "http://syllabus.aoyama.ac.jp/" + \
+                    soup.select("#CPH1_gvw_kensaku_lnkShousai_" +
+                                str(i))[0].get("href")
+                content = Class(db_day, db_time, db_campus, db_semester, db_title, db_instructer, db_detail, datetime.now())
+                db_session.add(content)
+                db_session.commit()
+
+    # 後期木
+    for i in range(2):
+        driver.get("http://syllabus.aoyama.ac.jp/")
+        semester_element = driver.find_element_by_id('CPH1_GKB')
+        semester_select_element = Select(semester_element)
+        driver.find_element_by_id('CPH1_rptCP_CP_' + str(i)).click()
+        semester_select_element.select_by_value('1.2.12')
+        driver.find_element_by_id('CPH1_rptYB_YB_3').click()
+
+        driver.find_element_by_id('CPH1_KM').send_keys(CourseTitle)
+        driver.find_element_by_id('CPH1_btnKensaku').click()
+
+        html = driver.page_source.encode('utf-8')
+        soup = BeautifulSoup(html, "html.parser")
+
+        result = int(soup.select("#CPH1_lblHitMsg")[0].getText())
+        if (result != 0):
+            for i in range(result):
+                test = soup.select(
+                    "#CPH1_gvw_kensaku_lblJigen_" + str(i))[0].get_text()
+                a = test.find("[")
+                b = test.find("]")
+                c = test.find("（")
+                db_campus = test[a+1:b-a]
+                db_day = test[b+1:b+2]
+                db_time = mojimoji.zen_to_han(test[b+2:b+3])
+                db_semester = test[c+1:c+2]
+                db_title = soup.select(
+                    "#CPH1_gvw_kensaku_lblKamoku_" + str(i))[0].get_text()
+                db_instructer = soup.select(
+                    "#CPH1_gvw_kensaku_lblKyouin_" + str(i))[0].get_text()
+                db_detail = "http://syllabus.aoyama.ac.jp/" + \
+                    soup.select("#CPH1_gvw_kensaku_lnkShousai_" +
+                                str(i))[0].get("href")
+                content = Class(db_day, db_time, db_campus, db_semester, db_title, db_instructer, db_detail, datetime.now())
+                db_session.add(content)
+                db_session.commit()
+
+    # 前期金
+    for i in range(2):
+        driver.get("http://syllabus.aoyama.ac.jp/")
+        semester_element = driver.find_element_by_id('CPH1_GKB')
+        semester_select_element = Select(semester_element)
+        driver.find_element_by_id('CPH1_rptCP_CP_' + str(i)).click()
+        semester_select_element.select_by_value('1.1.12')
+        driver.find_element_by_id('CPH1_rptYB_YB_4').click()
+
+        driver.find_element_by_id('CPH1_KM').send_keys(CourseTitle)
+        driver.find_element_by_id('CPH1_btnKensaku').click()
+
+        html = driver.page_source.encode('utf-8')
+        soup = BeautifulSoup(html, "html.parser")
+
+        result = int(soup.select("#CPH1_lblHitMsg")[0].getText())
+        if (result != 0):
+            for i in range(result):
+                test = soup.select(
+                    "#CPH1_gvw_kensaku_lblJigen_" + str(i))[0].get_text()
+                a = test.find("[")
+                b = test.find("]")
+                c = test.find("（")
+                db_campus = test[a+1:b-a]
+                db_day = test[b+1:b+2]
+                db_time = mojimoji.zen_to_han(test[b+2:b+3])
+                db_semester = test[c+1:c+2]
+                db_title = soup.select(
+                    "#CPH1_gvw_kensaku_lblKamoku_" + str(i))[0].get_text()
+                db_instructer = soup.select(
+                    "#CPH1_gvw_kensaku_lblKyouin_" + str(i))[0].get_text()
+                db_detail = "http://syllabus.aoyama.ac.jp/" + \
+                    soup.select("#CPH1_gvw_kensaku_lnkShousai_" +
+                                str(i))[0].get("href")
+                content = Class(db_day, db_time, db_campus, db_semester, db_title, db_instructer, db_detail, datetime.now())
+                db_session.add(content)
+                db_session.commit()
+
+    # 後期金
+    for i in range(2):
+        driver.get("http://syllabus.aoyama.ac.jp/")
+        semester_element = driver.find_element_by_id('CPH1_GKB')
+        semester_select_element = Select(semester_element)
+        driver.find_element_by_id('CPH1_rptCP_CP_' + str(i)).click()
+        semester_select_element.select_by_value('1.2.12')
+        driver.find_element_by_id('CPH1_rptYB_YB_4').click()
+
+        driver.find_element_by_id('CPH1_KM').send_keys(CourseTitle)
+        driver.find_element_by_id('CPH1_btnKensaku').click()
+
+        html = driver.page_source.encode('utf-8')
+        soup = BeautifulSoup(html, "html.parser")
+
+        result = int(soup.select("#CPH1_lblHitMsg")[0].getText())
+        if (result != 0):
+            for i in range(result):
+                test = soup.select(
+                    "#CPH1_gvw_kensaku_lblJigen_" + str(i))[0].get_text()
+                a = test.find("[")
+                b = test.find("]")
+                c = test.find("（")
+                db_campus = test[a+1:b-a]
+                db_day = test[b+1:b+2]
+                db_time = mojimoji.zen_to_han(test[b+2:b+3])
+                db_semester = test[c+1:c+2]
+                db_title = soup.select(
+                    "#CPH1_gvw_kensaku_lblKamoku_" + str(i))[0].get_text()
+                db_instructer = soup.select(
+                    "#CPH1_gvw_kensaku_lblKyouin_" + str(i))[0].get_text()
+                db_detail = "http://syllabus.aoyama.ac.jp/" + \
+                    soup.select("#CPH1_gvw_kensaku_lnkShousai_" +
+                                str(i))[0].get("href")
+                content = Class(db_day, db_time, db_campus, db_semester, db_title, db_instructer, db_detail, datetime.now())
+                db_session.add(content)
+                db_session.commit()
     # new 変更！
     return render_template("index.html", getDB=False, errorMsg="", classroom=["A", "B", "C", "D", "E", "F"], language=["フランス", "ドイツ", "スペイン", "中国", "ロシア", "韓国"])
 
