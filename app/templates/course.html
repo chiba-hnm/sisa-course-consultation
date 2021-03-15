@@ -65,8 +65,11 @@
         <div style="float:right;width:40%;height:600;overflow: scroll;margin-bottom:40px;">
             <form action="/course#top" method="POST" style="float: left;width:100%;margin:0;">
                 <span
-                    style="background: linear-gradient(transparent 50%, #cfeeb5 0%);">　{{selectBtn[1]}}{{selectBtn[2]}}　</span>
-                {% if first[selectBtn[1]][selectBtn[2]-1] != ""　%}
+                    style="background: linear-gradient(transparent 50%, #cfeeb5 0%);">
+                    {% if selectBtn[0] == "first" %} 前期 
+                    {% else %} 後期 {% endif %}
+                    {{selectBtn[1]}}{{selectBtn[2]}}</span>
+                {% if first[selectBtn[1]][selectBtn[2]-1] != "" and (selectBtn[0] == "first") %}
                 <button style="width:75%;" class="green" id="selectLecture" name="selectLecture"
                     value='{"first":"{{first}}", "second":"{{second}}", "request":"{{selectBtn}}", "classroom": "{{classroom}}", "language": "{{language}}", "title": "", "count": "{{count}}-2"}'>
                     取り消し
@@ -128,8 +131,11 @@
 
             <form action="/course#top2" method="POST" style="float: left;width:100%;margin:0;">
                 <span
-                    style="background: linear-gradient(transparent 50%, #cfeeb5 0%);">　{{selectBtn[1]}}{{selectBtn[2]}}　</span>
-                {% if second[selectBtn[1]][selectBtn[2]-1] != ""　%}
+                    style="background: linear-gradient(transparent 50%, #cfeeb5 0%);">
+                    {% if selectBtn[0] == "first" %} 前期 
+                    {% else %} 後期 {% endif %}
+                    {{selectBtn[1]}}{{selectBtn[2]}}</span>
+                {% if second[selectBtn[1]][selectBtn[2]-1] != ""　and (selectBtn[0] == "second") %}
                 <button style="width:75%;" class="green" id="selectLecture" name="selectLecture"
                     value='{"first":"{{first}}", "second":"{{second}}", "request":"{{selectBtn}}", "classroom": "{{classroom}}", "language": "{{language}}", "title": "", "count": "{{count}}-2"}'>
                     取り消し
