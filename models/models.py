@@ -1,10 +1,10 @@
 from sqlalchemy import Column, Integer, String, Text, DateTime
-# from models.database import Base
 from app.app import app
 from datetime import datetime
 from flask_sqlalchemy import SQLAlchemy
+import os
 
-app.config['SQLALCHEMY_DATABASE_URI'] = 'postgresql://postgres:@localhost/sample'
+app.config['SQLALCHEMY_DATABASE_URI'] = os.environ.get('postgres://zcihsjtpubpsdz:34753ab76823b1d5490bbb47fc6f7cf9856688cd0ea960146b7d34abc1427983@ec2-52-44-31-100.compute-1.amazonaws.com:5432/deg7gf4dhti158') or 'postgresql://postgres:@localhost/sample'
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 db = SQLAlchemy(app)
 

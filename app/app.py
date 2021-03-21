@@ -1,15 +1,12 @@
 from flask import Flask, render_template, request, send_file, send_from_directory, Response, make_response
 
-# from models.database import db.session
 from datetime import datetime
 import ast
-import json
 from selenium import webdriver
 from selenium.webdriver.support.ui import Select
 from selenium.webdriver.chrome.options import Options
 from bs4 import BeautifulSoup
 import time
-import chromedriver_binary
 from selenium.common.exceptions import NoSuchElementException
 import mojimoji
 import os
@@ -20,12 +17,11 @@ from reportlab.lib.pagesizes import A4, portrait
 from reportlab.platypus import Table, TableStyle
 from reportlab.lib.units import mm
 from reportlab.lib import colors
-import base64
 
 # Flaskオブジェクトの生成
 app = Flask(__name__)
 
-from app.models import db, Course
+from models.models import db, Course
 # 最初のページ
 @app.route("/")
 def index():
