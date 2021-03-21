@@ -21,7 +21,7 @@ from reportlab.lib import colors
 # Flaskオブジェクトの生成
 app = Flask(__name__)
 
-# from models.models import db, Course
+from models.models import db, Course
 # 最初のページ
 @app.route("/")
 def index():

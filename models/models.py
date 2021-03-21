@@ -4,8 +4,6 @@ from datetime import datetime
 from flask_sqlalchemy import SQLAlchemy
 import os
 
-db=""
-Course = ""
 app.config['SQLALCHEMY_DATABASE_URI'] = os.environ.get('DATABASE_URL') or 'postgresql://postgres:@localhost/sample'
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 db = SQLAlchemy(app)
