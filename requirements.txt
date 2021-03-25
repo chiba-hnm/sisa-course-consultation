@@ -1,5 +1,6 @@
 beautifulsoup4==4.9.3
 bs4==0.0.1
+chromedriver-binary==89.0.4389.23.0
 click==7.1.2
 Flask==1.1.2
 Flask-SQLAlchemy==2.5.1
