@@ -1,26 +1,20 @@
 from sqlalchemy import Column, Integer, String, Text, DateTime
-from app.app import app
+from models.database import Base
 from datetime import datetime
-from flask_sqlalchemy import SQLAlchemy
-import os
 
-app.config['SQLALCHEMY_DATABASE_URI'] = os.environ.get('DATABASE_URL') or 'postgresql://postgres:@localhost/sample'
-app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
-db = SQLAlchemy(app)
-
-class Course(db.Model):
-    __tablename__ = 'course'
+class Course(Base):
+    __tablename__ = 'class'
     id = Column('id', Integer, primary_key=True)
-    day = Column('day', String(10), unique=False)
+    day = Column('day', Integer, unique=False)
     time = Column('time', Integer, unique=False)
     campus = Column('campus', String(10), unique=False)
     semester = Column('semester', String(10), unique=False)
     title = Column('title', String(128), unique=False)
     instructer = Column('instructer', String(128), unique=False)
-    detail = Column('detail', Text, unique=False)
-    # date = Column(DateTime, default=datetime.now())
+    detail = Column('detail', String(128), unique=False)
+    date = Column(DateTime, default=datetime.now())
 
-    def __init__(self, day, time, campus, semester, title, instructer, detail):
+    def __init__(self, day, time, campus, semester, title, instructer, detail, date):
         self.day = day
         self.time = time
         self.campus = campus
@@ -28,7 +22,7 @@ class Course(db.Model):
         self.title = title
         self.instructer = instructer
         self.detail = detail
-        # self.date = date
+        self.date = date
 
     def __str__(self):
         return str(self.id) + ':' + self.title

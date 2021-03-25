@@ -1,15 +1,23 @@
-from flask import Flask, render_template, request, send_file, send_from_directory, Response, make_response
-
+# Flaskとrender_template（HTMLを表示させるための関数）をインポート
+from flask import Flask, render_template, request, send_file
+from models.models import Course
+# 以下を追加
+from models.database import db_session
 from datetime import datetime
 import ast
+import json
+
 from selenium import webdriver
 from selenium.webdriver.support.ui import Select
 from selenium.webdriver.chrome.options import Options
 from bs4 import BeautifulSoup
 import time
+import chromedriver_binary
 from selenium.common.exceptions import NoSuchElementException
 import mojimoji
 import os
+from flask import Flask, send_from_directory
+from flask import Flask, Response, make_response
 from reportlab.pdfgen import canvas
 from reportlab.pdfbase import pdfmetrics
 from reportlab.pdfbase.cidfonts import UnicodeCIDFont
@@ -17,59 +25,40 @@ from reportlab.lib.pagesizes import A4, portrait
 from reportlab.platypus import Table, TableStyle
 from reportlab.lib.units import mm
 from reportlab.lib import colors
+import base64
 
 # Flaskオブジェクトの生成
 app = Flask(__name__)
 
-from models.models import db, Course
 # 最初のページ
 @app.route("/")
 def index():
-    # 基本的にはDBには授業内容が入っているので，データの作成をする必要はない
     getDB = False
-    # もしDBの中身を全件取得して
     getDB = Course.query.all()
-    # 空だった場合は
     if getDB == []:
-        # データの作成をする必要がある
         getDB = True
-    # データを作成するための表示にする
-    return render_template("index.html",
-                            getDB=getDB,
-                            errorMsg="",
-                            classroom=["A", "B", "C", "D", "E", "F"],
-                            language=["フランス", "ドイツ", "スペイン", "中国", "ロシア", "韓国"])
+    # new 変更！
+    return render_template("index.html", getDB=getDB, errorMsg="", classroom=["A", "B", "C", "D", "E", "F"], language=["フランス", "ドイツ", "スペイン", "中国", "ロシア", "韓国"])
 
 # リセット押下時
 @app.route("/", methods=["post"])
 def reset():
-    return render_template("index.html",
-                            getDB=False,
-                            errorMsg="",
-                            classroom=["A", "B", "C", "D", "E", "F"],
-                            language=["フランス", "ドイツ", "スペイン", "中国", "ロシア", "韓国"])
-
-@app.route("/save")
-def no_save():
-    return render_template("index.html",
-                            getDB=False,
-                            errorMsg="",
-                            classroom=["A", "B", "C", "D", "E", "F"],
-                            language=["フランス", "ドイツ", "スペイン", "中国", "ロシア", "韓国"])
+    # new 変更！
+    return render_template("index.html", getDB=False, errorMsg="", classroom=["A", "B", "C", "D", "E", "F"], language=["フランス", "ドイツ", "スペイン", "中国", "ロシア", "韓国"])
 
 # PDF保存時
 @app.route("/save", methods=["post"])
-def make():
+def make():  # ファイル名
     if request.form.get("save") != None:
         pdf_data = request.form.get("save")
-        dic_pdf_data = ast.literal_eval(pdf_data)
-        first = ast.literal_eval(dic_pdf_data["first"])
-        second = ast.literal_eval(dic_pdf_data["second"])
+        dic = ast.literal_eval(pdf_data)
+        first = ast.literal_eval(dic["first"])
+        second = ast.literal_eval(dic["second"])
         response = make_response()
         downloadFileName = str(datetime.now()) + '.pdf'
         pdf_canvas = canvas.Canvas('./test.pdf',  pagesize=portrait(A4))
-        print_string(pdf_canvas, dic_pdf_data["classroom"],
-                     dic_pdf_data["language"], dic_pdf_data["count"], first, second)
+        print_string(pdf_canvas, dic["classroom"],
+                     dic["language"], dic["count"], first, second)
         pdf_canvas.save()
         response.data = open("./test.pdf", "rb").read()
         response.headers['Content-Disposition'] = 'attachment; filename=' + \
@@ -78,6 +67,8 @@ def make():
         return response
 
 # 履歴書フォーマット作成
+
+
 def print_string(pdf_canvas, classroom, language, count, first, second):
     pdfmetrics.registerFont(UnicodeCIDFont('HeiseiKakuGo-W5'))  # フォント
 
@@ -166,13 +157,26 @@ def print_string(pdf_canvas, classroom, language, count, first, second):
 
     pdf_canvas.showPage()
 
+
+# 作成
+if __name__ == '__main__':
+    make()
+
+@app.route("/get")
+def no_get():
+    return render_template("index.html", getDB=False, errorMsg="", classroom=["A", "B", "C", "D", "E", "F"], language=["フランス", "ドイツ", "スペイン", "中国", "ロシア", "韓国"])
+
+@app.route("/save")
+def no_save():
+    return render_template("index.html", getDB=False, errorMsg="", classroom=["A", "B", "C", "D", "E", "F"], language=["フランス", "ドイツ", "スペイン", "中国", "ロシア", "韓国"])
+
+@app.route("/course")
+def no_course():
+    return render_template("index.html", getDB=False, errorMsg="", classroom=["A", "B", "C", "D", "E", "F"], language=["フランス", "ドイツ", "スペイン", "中国", "ロシア", "韓国"])
+
 @app.route("/import")
 def no_import():
-    return render_template("index.html",
-                            getDB=False,
-                            errorMsg="",
-                            classroom=["A", "B", "C", "D", "E", "F"],
-                            language=["フランス", "ドイツ", "スペイン", "中国", "ロシア", "韓国"])
+    return render_template("index.html", getDB=False, errorMsg="", classroom=["A", "B", "C", "D", "E", "F"], language=["フランス", "ドイツ", "スペイン", "中国", "ロシア", "韓国"])
 
 # データインポート時
 @app.route("/import", methods=["post"])
@@ -190,30 +194,16 @@ def data_import():
             dic = ast.literal_eval(fileData)
             first = ast.literal_eval(dic["first"])
             second = ast.literal_eval(dic["second"])
-            return render_template("course.html",
-                                    first=first,
-                                    second=second,
-                                    count=dic["count"],
-                                    selectBtn=selectBtn,
-                                    getDB=getDB,
-                                    time=time, 
-                                    classroom=dic["classroom"],
-                                    language=dic["language"])
+            # new 変更！
+            return render_template("course.html", count=dic["count"], selectBtn=selectBtn, getDB=getDB, time=time, first=first, second=second, classroom=dic["classroom"], language=dic["language"], )
         else:
             errorMsg = "入力したファイルが正しくありません．再度お試しください．"
-    return render_template("index.html",
-                            getDB=False,
-                            errorMsg=errorMsg,
-                            classroom=["A", "B", "C", "D", "E", "F"],
-                            language=["フランス", "ドイツ", "スペイン", "中国", "ロシア", "韓国"])
+    # new 変更！
+    return render_template("index.html", getDB=False, errorMsg=errorMsg, classroom=["A", "B", "C", "D", "E", "F"], language=["フランス", "ドイツ", "スペイン", "中国", "ロシア", "韓国"])
 
 @app.route("/export")
 def no_export():
-    return render_template("index.html",
-                            getDB=False,
-                            errorMsg="",
-                            classroom=["A", "B", "C", "D", "E", "F"],
-                            language=["フランス", "ドイツ", "スペイン", "中国", "ロシア", "韓国"])
+    return render_template("index.html", getDB=False, errorMsg="", classroom=["A", "B", "C", "D", "E", "F"], language=["フランス", "ドイツ", "スペイン", "中国", "ロシア", "韓国"])
 
 @app.route("/export", methods=["post"])
 def data_export():
@@ -225,20 +215,16 @@ def data_export():
         response.headers['Content-Disposition'] = 'attachment; filename=' + \
             downloadFileName
         return response
-    return render_template("index.html",
-                            getDB=False,
-                            errorMsg="",
-                            classroom=["A", "B", "C", "D", "E", "F"],
-                            language=["フランス", "ドイツ", "スペイン", "中国", "ロシア", "韓国"])
-
-@app.route("/get")
-def no_get():
+    # new 変更！
     return render_template("index.html", getDB=False, errorMsg="", classroom=["A", "B", "C", "D", "E", "F"], language=["フランス", "ドイツ", "スペイン", "中国", "ロシア", "韓国"])
+
+    # return render_template("index.html", time = time, first=first, classroom= ["A", "B", "C", "D", "E", "F"], language=["フランス", "ドイツ", "スペイン", "中国", "ロシア", "韓国"])  # new 変更！
+
 
 @app.route("/get", methods=["post"])
 def get():
-    db.session.query(Course).delete()
-    db.session.commit()
+    db_session.query(Course).delete()
+    db_session.commit()
 
     test = ["社会数理入門Ⅰ", "社会数理入門Ⅱ", "数理情報Ⅰ",
             "数理情報Ⅱ", "ウェルカム・レクチャー", "キャリアデザイン・セミナー"]
@@ -249,8 +235,8 @@ def get():
     driver = webdriver.Chrome('chromedriver', options=options)
     driver.implicitly_wait(10)
 
-    for i in test:
-        CourseTitle = i
+    for j in test:
+        CourseTitle = j
         driver.get("http://syllabus.aoyama.ac.jp/")
 
         driver.find_element_by_id('CPH1_KM').send_keys(CourseTitle)
@@ -281,9 +267,9 @@ def get():
                     soup.select("#CPH1_gvw_kensaku_lnkShousai_" +
                                 str(i))[0].get("href")
                 content = Course(db_day, db_time, db_campus, db_semester,
-                                db_title, db_instructer, db_detail)
-                db.session.add(content)
-                db.session.commit()
+                                db_title, db_instructer, db_detail, datetime.now())
+                db_session.add(content)
+                db_session.commit()
 
     test2 = ["フレッシャーズ・セミナー", "自己理解", "現代社会の諸問題", "科学・技術の視点", "歴史と人間"]
     for i in test2:
@@ -319,19 +305,46 @@ def get():
                 db_detail = "http://syllabus.aoyama.ac.jp/" + \
                     soup.select("#CPH1_gvw_kensaku_lnkShousai_" +
                                 str(i))[0].get("href")
-                content = Course(db_day, db_time, db_campus, db_semester, db_title, db_instructer, db_detail)
-                db.session.add(content)
-                db.session.commit()
+                content = Course(db_day, db_time, db_campus, db_semester, db_title, db_instructer, db_detail, datetime.now())
+                db_session.add(content)
+                db_session.commit()
 
         driver.find_element_by_id('CPH1_rptYB_YB_0').click()
         driver.find_element_by_id('CPH1_rptYB_YB_1').click()
-        driver.find_element_by_id('CPH1_btnKensaku').click()
+        if (CourseTitle != "フレッシャーズ・セミナー"):
+            driver.find_element_by_id('CPH1_btnKensaku').click()
 
-        html = driver.page_source.encode('utf-8')
-        soup = BeautifulSoup(html, "html.parser")
+            html = driver.page_source.encode('utf-8')
+            soup = BeautifulSoup(html, "html.parser")
 
-        result = int(soup.select("#CPH1_lblHitMsg")[0].getText())
-        if (result != 0):
+            result = int(soup.select("#CPH1_lblHitMsg")[0].getText())
+            if (result != 0):
+                for i in range(result):
+                    test = soup.select(
+                        "#CPH1_gvw_kensaku_lblJigen_" + str(i))[0].get_text()
+                    a = test.find("[")
+                    b = test.find("]")
+                    c = test.find("（")
+                    db_campus = test[a+1:b-a]
+                    db_day = test[b+1:b+2]
+                    db_time = mojimoji.zen_to_han(test[b+2:b+3])
+                    db_semester = test[c+1:c+2]
+
+                    db_title = soup.select(
+                        "#CPH1_gvw_kensaku_lblKamoku_" + str(i))[0].get_text()
+                    db_instructer = soup.select(
+                        "#CPH1_gvw_kensaku_lblKyouin_" + str(i))[0].get_text()
+                    db_detail = "http://syllabus.aoyama.ac.jp/" + \
+                        soup.select("#CPH1_gvw_kensaku_lnkShousai_" +
+                                    str(i))[0].get("href")
+                    content = Course(db_day, db_time, db_campus, db_semester, db_title, db_instructer, db_detail, datetime.now())
+                    db_session.add(content)
+                    db_session.commit()
+        else:
+            driver.find_element_by_id('CPH1_rptCP_CP_0').click()
+            driver.find_element_by_id('CPH1_btnKensaku').click()
+            result = int(soup.select("#CPH1_lblHitMsg")[0].getText())
+
             for i in range(result):
                 test = soup.select(
                     "#CPH1_gvw_kensaku_lblJigen_" + str(i))[0].get_text()
@@ -340,7 +353,7 @@ def get():
                 c = test.find("（")
                 db_campus = test[a+1:b-a]
                 db_day = test[b+1:b+2]
-                db_time = mojimoji.zen_to_han(test[b+2:b+3])
+                db_time = test[b+2:b+3]
                 db_semester = test[c+1:c+2]
 
                 db_title = soup.select(
@@ -350,10 +363,37 @@ def get():
                 db_detail = "http://syllabus.aoyama.ac.jp/" + \
                     soup.select("#CPH1_gvw_kensaku_lnkShousai_" +
                                 str(i))[0].get("href")
-                content = Course(db_day, db_time, db_campus, db_semester, db_title, db_instructer, db_detail)
-                db.session.add(content)
-                db.session.commit()
+                content = Course(db_day, db_time, db_campus, db_semester, db_title, db_instructer, db_detail, datetime.now())
+                db_session.add(content)
+                db_session.commit()
 
+            driver.find_element_by_id('CPH1_rptCP_CP_0').click()
+            driver.find_element_by_id('CPH1_rptCP_CP_1').click()
+            driver.find_element_by_id('CPH1_btnKensaku').click()
+            result = int(soup.select("#CPH1_lblHitMsg")[0].getText())
+
+            for i in range(result):
+                test = soup.select(
+                    "#CPH1_gvw_kensaku_lblJigen_" + str(i))[0].get_text()
+                a = test.find("[")
+                b = test.find("]")
+                c = test.find("（")
+                db_campus = test[a+1:b-a]
+                db_day = test[b+1:b+2]
+                db_time = test[b+2:b+3]
+                db_semester = test[c+1:c+2]
+
+                db_title = soup.select(
+                    "#CPH1_gvw_kensaku_lblKamoku_" + str(i))[0].get_text()
+                db_instructer = soup.select(
+                    "#CPH1_gvw_kensaku_lblKyouin_" + str(i))[0].get_text()
+                db_detail = "http://syllabus.aoyama.ac.jp/" + \
+                    soup.select("#CPH1_gvw_kensaku_lnkShousai_" +
+                                str(i))[0].get("href")
+                content = Course(db_day, db_time, db_campus, db_semester, db_title, db_instructer, db_detail, datetime.now())
+                db_session.add(content)
+                db_session.commit()
+                
         driver.find_element_by_id('CPH1_rptYB_YB_1').click()
         driver.find_element_by_id('CPH1_rptYB_YB_2').click()
 
@@ -382,9 +422,9 @@ def get():
                 db_detail = "http://syllabus.aoyama.ac.jp/" + \
                     soup.select("#CPH1_gvw_kensaku_lnkShousai_" +
                                 str(i))[0].get("href")
-                content = Course(db_day, db_time, db_campus, db_semester, db_title, db_instructer, db_detail)
-                db.session.add(content)
-                db.session.commit()
+                content = Course(db_day, db_time, db_campus, db_semester, db_title, db_instructer, db_detail, datetime.now())
+                db_session.add(content)
+                db_session.commit()
 
         driver.find_element_by_id('CPH1_rptYB_YB_2').click()
         driver.find_element_by_id('CPH1_rptYB_YB_3').click()
@@ -414,9 +454,9 @@ def get():
                 db_detail = "http://syllabus.aoyama.ac.jp/" + \
                     soup.select("#CPH1_gvw_kensaku_lnkShousai_" +
                                 str(i))[0].get("href")
-                content = Course(db_day, db_time, db_campus, db_semester, db_title, db_instructer, db_detail)
-                db.session.add(content)
-                db.session.commit()
+                content = Course(db_day, db_time, db_campus, db_semester, db_title, db_instructer, db_detail, datetime.now())
+                db_session.add(content)
+                db_session.commit()
 
         driver.find_element_by_id('CPH1_rptYB_YB_3').click()
         driver.find_element_by_id('CPH1_rptYB_YB_4').click()
@@ -446,9 +486,9 @@ def get():
                 db_detail = "http://syllabus.aoyama.ac.jp/" + \
                     soup.select("#CPH1_gvw_kensaku_lnkShousai_" +
                                 str(i))[0].get("href")
-                content = Course(db_day, db_time, db_campus, db_semester, db_title, db_instructer, db_detail)
-                db.session.add(content)
-                db.session.commit()
+                content = Course(db_day, db_time, db_campus, db_semester, db_title, db_instructer, db_detail, datetime.now())
+                db_session.add(content)
+                db_session.commit()
 
     CourseTitle = "健康・スポーツ演習"
 
@@ -486,9 +526,9 @@ def get():
                 db_detail = "http://syllabus.aoyama.ac.jp/" + \
                     soup.select("#CPH1_gvw_kensaku_lnkShousai_" +
                                 str(i))[0].get("href")
-                content = Course(db_day, db_time, db_campus, db_semester, db_title, db_instructer, db_detail)
-                db.session.add(content)
-                db.session.commit()
+                content = Course(db_day, db_time, db_campus, db_semester, db_title, db_instructer, db_detail, datetime.now())
+                db_session.add(content)
+                db_session.commit()
 
     # 後期月
     for i in range(2):
@@ -524,9 +564,9 @@ def get():
                 db_detail = "http://syllabus.aoyama.ac.jp/" + \
                     soup.select("#CPH1_gvw_kensaku_lnkShousai_" +
                                 str(i))[0].get("href")
-                content = Course(db_day, db_time, db_campus, db_semester, db_title, db_instructer, db_detail)
-                db.session.add(content)
-                db.session.commit()
+                content = Course(db_day, db_time, db_campus, db_semester, db_title, db_instructer, db_detail, datetime.now())
+                db_session.add(content)
+                db_session.commit()
 
     # 前期火
     for i in range(2):
@@ -562,9 +602,9 @@ def get():
                 db_detail = "http://syllabus.aoyama.ac.jp/" + \
                     soup.select("#CPH1_gvw_kensaku_lnkShousai_" +
                                 str(i))[0].get("href")
-                content = Course(db_day, db_time, db_campus, db_semester, db_title, db_instructer, db_detail)
-                db.session.add(content)
-                db.session.commit()
+                content = Course(db_day, db_time, db_campus, db_semester, db_title, db_instructer, db_detail, datetime.now())
+                db_session.add(content)
+                db_session.commit()
 
     # 後期火
     for i in range(2):
@@ -600,9 +640,9 @@ def get():
                 db_detail = "http://syllabus.aoyama.ac.jp/" + \
                     soup.select("#CPH1_gvw_kensaku_lnkShousai_" +
                                 str(i))[0].get("href")
-                content = Course(db_day, db_time, db_campus, db_semester, db_title, db_instructer, db_detail)
-                db.session.add(content)
-                db.session.commit()
+                content = Course(db_day, db_time, db_campus, db_semester, db_title, db_instructer, db_detail, datetime.now())
+                db_session.add(content)
+                db_session.commit()
 
     # 前期水
     for i in range(2):
@@ -638,9 +678,9 @@ def get():
                 db_detail = "http://syllabus.aoyama.ac.jp/" + \
                     soup.select("#CPH1_gvw_kensaku_lnkShousai_" +
                                 str(i))[0].get("href")
-                content = Course(db_day, db_time, db_campus, db_semester, db_title, db_instructer, db_detail)
-                db.session.add(content)
-                db.session.commit()
+                content = Course(db_day, db_time, db_campus, db_semester, db_title, db_instructer, db_detail, datetime.now())
+                db_session.add(content)
+                db_session.commit()
 
     # 後期水
     for i in range(2):
@@ -676,9 +716,9 @@ def get():
                 db_detail = "http://syllabus.aoyama.ac.jp/" + \
                     soup.select("#CPH1_gvw_kensaku_lnkShousai_" +
                                 str(i))[0].get("href")
-                content = Course(db_day, db_time, db_campus, db_semester, db_title, db_instructer, db_detail)
-                db.session.add(content)
-                db.session.commit()
+                content = Course(db_day, db_time, db_campus, db_semester, db_title, db_instructer, db_detail, datetime.now())
+                db_session.add(content)
+                db_session.commit()
 
     # 前期木
     for i in range(2):
@@ -714,9 +754,9 @@ def get():
                 db_detail = "http://syllabus.aoyama.ac.jp/" + \
                     soup.select("#CPH1_gvw_kensaku_lnkShousai_" +
                                 str(i))[0].get("href")
-                content = Course(db_day, db_time, db_campus, db_semester, db_title, db_instructer, db_detail)
-                db.session.add(content)
-                db.session.commit()
+                content = Course(db_day, db_time, db_campus, db_semester, db_title, db_instructer, db_detail, datetime.now())
+                db_session.add(content)
+                db_session.commit()
 
     # 後期木
     for i in range(2):
@@ -752,9 +792,9 @@ def get():
                 db_detail = "http://syllabus.aoyama.ac.jp/" + \
                     soup.select("#CPH1_gvw_kensaku_lnkShousai_" +
                                 str(i))[0].get("href")
-                content = Course(db_day, db_time, db_campus, db_semester, db_title, db_instructer, db_detail)
-                db.session.add(content)
-                db.session.commit()
+                content = Course(db_day, db_time, db_campus, db_semester, db_title, db_instructer, db_detail, datetime.now())
+                db_session.add(content)
+                db_session.commit()
 
     # 前期金
     for i in range(2):
@@ -790,9 +830,9 @@ def get():
                 db_detail = "http://syllabus.aoyama.ac.jp/" + \
                     soup.select("#CPH1_gvw_kensaku_lnkShousai_" +
                                 str(i))[0].get("href")
-                content = Course(db_day, db_time, db_campus, db_semester, db_title, db_instructer, db_detail)
-                db.session.add(content)
-                db.session.commit()
+                content = Course(db_day, db_time, db_campus, db_semester, db_title, db_instructer, db_detail, datetime.now())
+                db_session.add(content)
+                db_session.commit()
 
     # 後期金
     for i in range(2):
@@ -828,22 +868,12 @@ def get():
                 db_detail = "http://syllabus.aoyama.ac.jp/" + \
                     soup.select("#CPH1_gvw_kensaku_lnkShousai_" +
                                 str(i))[0].get("href")
-                content = Course(db_day, db_time, db_campus, db_semester, db_title, db_instructer, db_detail)
-                db.session.add(content)
-                db.session.commit()
-    return render_template("index.html",
-                            getDB=False,
-                            errorMsg="",
-                            classroom=["A", "B", "C", "D", "E", "F"],
-                            language=["フランス", "ドイツ", "スペイン", "中国", "ロシア", "韓国"])
+                content = Course(db_day, db_time, db_campus, db_semester, db_title, db_instructer, db_detail, datetime.now())
+                db_session.add(content)
+                db_session.commit()
+    # new 変更！
+    return render_template("index.html", getDB=False, errorMsg="", classroom=["A", "B", "C", "D", "E", "F"], language=["フランス", "ドイツ", "スペイン", "中国", "ロシア", "韓国"])
 
-@app.route("/course")
-def no_course():
-    return render_template("index.html",
-                            getDB=False,
-                            errorMsg="",
-                            classroom=["A", "B", "C", "D", "E", "F"],
-                            language=["フランス", "ドイツ", "スペイン", "中国", "ロシア", "韓国"])
 
 @app.route("/course", methods=['GET', 'POST'])
 def output():
@@ -897,14 +927,8 @@ def output():
                 first["thu"][2] = "○" + language_name + "語Ⅰ(B)-1"
                 second["tue"][2] = "○" + language_name + "語Ⅰ(A)-2"
                 second["thu"][2] = "○" + language_name + "語Ⅰ(B)-2"
-            return render_template("course.html", 
-                                    first=first,
-                                    second=second,
-                                    count=count,
-                                    getDB=getDB,
-                                    time=time,
-                                    classroom=class_name,
-                                    language=language_name)
+            # new 変更！
+            return render_template("course.html",  count=count, getDB=getDB, time=time, first=first, second=second, classroom=class_name, language=language_name)
         else:
             if request.form.get("selectTime") != None:
                 select_time_name = request.form.get("selectTime")
@@ -967,6 +991,7 @@ def output():
                     second[selectBtn[1]][int(
                         selectBtn[2])-1] = dic_select_lecture_name["title"]
                 selectBtn[2] = int(selectBtn[2])
+            # new 変更！
             return render_template("course.html",
                                     first = first,
                                     second = second,
