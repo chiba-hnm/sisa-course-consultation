@@ -77,17 +77,17 @@
                 {% endif %}
             </form>
             {% for a in getDB %}
-            <form action="/course#top" method="POST" style="float: left;width:75%;margin:0;">
-                <button style="width:90%; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;" class="green"
-                    id="selectLecture" name="selectLecture"
-                    value='{"first":"{{first}}", "second":"{{second}}", "request":"{{selectBtn}}", "classroom": "{{classroom}}", "language": "{{language}}", "title": "{{a.title}}", "count": "{{count}}+2"}'>
-                    {{a.title}}[{{a.campus}}]（{{a.instructer}}）
-                </button>
-            </form>
-            <button style="width:15%;" style="float: right;" onclick="getDetail('{{a.detail}}')">詳細</button>
-
+                {% if ("社会数理入門" not in a.title) or ((classroom == "A" or classroom =="B") and a.instructer == "伏屋 広隆") or ((classroom == "C" or classroom =="D") and a.instructer == "矢野 公一") or ((classroom == "E" or classroom =="F") and a.instructer == "髙村 正志") %}
+                <form action="/course#top" method="POST" style="float: left;width:75%;margin:0;">
+                    <button style="width:90%; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;" class="green"
+                        id="selectLecture" name="selectLecture"
+                        value='{"first":"{{first}}", "second":"{{second}}", "request":"{{selectBtn}}", "classroom": "{{classroom}}", "language": "{{language}}", "title": "{{a.title}}", "count": "{{count}}+2"}'>
+                        {{a.title}}[{{a.campus}}]（{{a.instructer}}）
+                    </button>
+                </form>
+                <button style="width:15%;" style="float: right;" onclick="getDetail('{{a.detail}}')">詳細</button>
+                {% endif %}
             {% endfor %}
-
         </div>
         <!-- <div style="float:right;width:40%;height:300;">
             <iframe id="detail-display1" float="bottom" width="100%" height="100%" frameborder="1" style="border:1;"
@@ -143,17 +143,17 @@
                 {% endif %}
             </form>
             {% for a in getDB %}
-            <form action="/course#top2" method="POST" style="float: left;width:75%;margin:0;">
-                <button style="width:90%; overflow: hidden; text-overflow: ellipsis;white-space: nowrap;" class="green"
-                    id="selectLecture" name="selectLecture"
-                    value='{"first":"{{first}}", "second":"{{second}}", "request":"{{selectBtn}}", "classroom": "{{classroom}}", "language": "{{language}}", "title": "{{a.title}}", "count": "{{count}}+2"}'>
-                    {{a.title}}[{{a.campus}}]（{{a.instructer}}）
-                </button>
-            </form>
-            <button style="width:15%;" style="float: right;" onclick="getDetail('{{a.detail}}')">詳細</button>
-
+                {% if ("社会数理入門" not in a.title) or ((classroom == "A" or classroom =="B") and a.instructer == "伏屋 広隆") or ((classroom == "C" or classroom =="D") and a.instructer == "矢野 公一") or ((classroom == "E" or classroom =="F") and a.instructer == "髙村 正志") %}
+                <form action="/course#top2" method="POST" style="float: left;width:75%;margin:0;">
+                    <button style="width:90%; overflow: hidden; text-overflow: ellipsis;white-space: nowrap;" class="green"
+                        id="selectLecture" name="selectLecture"
+                        value='{"first":"{{first}}", "second":"{{second}}", "request":"{{selectBtn}}", "classroom": "{{classroom}}", "language": "{{language}}", "title": "{{a.title}}", "count": "{{count}}+2"}'>
+                        {{a.title}}[{{a.campus}}]（{{a.instructer}}）
+                    </button>
+                </form>
+                <button style="width:15%;" style="float: right;" onclick="getDetail('{{a.detail}}')">詳細</button>
+                {% endif %}
             {% endfor %}
-
         </div>
         <!-- <div style="float:right;width:40%;height:300;">
             <iframe id="detail-display2" float="bottom" width="100%" height="100%" frameborder="1" style="border:1;"
