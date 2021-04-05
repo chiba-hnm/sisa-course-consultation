@@ -226,8 +226,8 @@ def get():
     db_session.query(Course).delete()
     db_session.commit()
 
-    test = ["社会数理入門Ⅰ", "社会数理入門Ⅱ", "数理情報Ⅰ",
-            "数理情報Ⅱ", "ウェルカム・レクチャー", "キャリアデザイン・セミナー"]
+    test = ["社会数理入門Ⅰ", "社会数理入門Ⅱ", "数理情報Ⅰ", 
+            "数理情報Ⅱ", "社会数理Ⅰ", "社会数理Ⅱ", "ウェルカム・レクチャー", "キャリアデザイン・セミナー"]
     options = webdriver.ChromeOptions()
     options.add_argument('--headless')
     options.add_argument('--no-sandbox')
